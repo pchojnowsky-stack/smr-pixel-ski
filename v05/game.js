@@ -81,7 +81,7 @@
   for(let x=0;x<256;x+=7){pc.fillStyle=x%3?'#f3f9fc':'#eaf4fa';pc.fillRect(x,0,1,256);}
   for(let y=0;y<256;y+=23){pc.fillStyle='#f5fcff';pc.fillRect(0,y,256,2);}
   pisteTexture.update();pisteTexture.uScale=7;pisteTexture.vScale=34;
-  piste.diffuseTexture=pisteTexture;piste.backFaceCulling=false;
+  piste.diffuseTexture=pisteTexture;piste.backFaceCulling=false;piste.disableLighting=true;piste.emissiveColor=RGB(.89,.94,.97);piste.diffuseColor=RGB(.93,.96,.99);
   // Build a real height-field mesh with normals so the terrain reacts to low winter sunlight.
   function makeHeightField(){
     const pos=[],uv=[],colors=[],indices=[];
