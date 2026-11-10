@@ -1,0 +1,31 @@
+name: SMR 0.5 Visual QA
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'v05/**'
+      - '.github/workflows/v05-visual.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  screenshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate Babylon stage I JavaScript
+        run: node --check v05/game.js
+      - name: Install screenshot browser
+        run: |
+          npm install --no-save playwright
+          npx playwright install chromium --with-deps
+      - name: Run Playwright visual and interaction smoke test
+        run: node v05/visual-qa.cjs
+      - name: Upload screenshots and metrics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smr-stage1-babylon-screens
+          path: v05/qa/
+          retention-days: 14
