@@ -1,0 +1,31 @@
+name: SMR 0.7 Skier Visual QA
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'v07/**'
+      - '.github/workflows/v07-visual.yml'
+  pull_request:
+    paths:
+      - 'v07/**'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  screenshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - run: node --check v07/game.js && node --check v07/skier.js
+      - run: |
+          npm install --no-save playwright
+          npx playwright install chromium --with-deps
+      - name: Browser smoke and actual WebGL screenshots
+        run: node v07/visual-qa.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smr-stage3-skier-screens
+          path: v07/qa/
+          retention-days: 14
