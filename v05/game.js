@@ -118,7 +118,7 @@
     const m=new B.Mesh('piste ribbon',scene),d=new B.VertexData();
     d.positions=pos;d.uvs=uv;d.indices=ids;d.normals=normals;d.applyToMesh(m);m.material=piste;m.receiveShadows=true;m.isPickable=false;
   }
-  makeGroomedPiste();
+  // Groomed piste ribbon temporarily disabled: discontinuous strip lighting caused visible geometric bands.
   // Stylised spruce mesh: tapered branch clusters with snowy branch tips. One draw call for all trees.
   const treeMat=new B.StandardMaterial('spruce vertex color',scene);
   treeMat.diffuseColor=RGB(1,1,1);treeMat.specularColor=RGB(.035,.035,.035);treeMat.useVertexColors=true;treeMat.backFaceCulling=false;
