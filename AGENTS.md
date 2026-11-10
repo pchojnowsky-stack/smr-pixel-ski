@@ -1,28 +1,24 @@
-# SMR Pixel Ski — agent instructions
-This repository is a mobile-first browser ski game. Main user edits it from ChatGPT on Android and tests on GitHub Pages.
+# SMR Pixel Ski — proces agentów etapowych (aktualizacja 0.6)
 
-## Artistic target
-Variant C: polished third-person downhill camera, lively retro low-poly / pixel-3D resort, lush snow-covered trees, recognizable buildings, chairlifts, moving gondolas and human-proportioned skiers. Avoid giant blocky character, washed-out snow, empty mountain scenery and cinematic screenshots that the engine cannot reproduce. The 2026-11-10 user screenshot 0.3 was explicitly rejected. This is an iterative game, not a real-world NMT map; do not claim 1:1 SMR fidelity.
+## Działająca wersja i bezpieczne środowiska
+- `/` – dotychczasowa produkcyjna 0.4.2, nie nadpisuj bez akceptacji.
+- `/v05/` – fundament Babylon.js 0.5.
+- `/v06/` – prace graficzne 0.6, śnieg i las.
+- `/v07/`, `/v08/`, `/v09/` – przygotuj dopiero jako niezależne sceny kolejnych etapów.
+- Za każdym razem testuj i publikuj przez GitHub Pages, nie wymuszaj Railway.
 
-## App
-- index.html: responsive touch-first HUD with built-in buttons; links config.js then game.js.
-- config.js: low-cost camera/visual settings; values validated by tools/check.mjs.
-- game.js: dependency-free custom WebGL mesh renderer; geometry, resort objects, skier and downhill simulation.
-- GitHub Pages auto deploys when main changes. Avoid Railway; the connected account's trial was exhausted.
+## Agenci GitHub Copilot (profile, nie uruchomione instancje)
+- `.github/agents/06-snow-forest.agent.md` – Snow Forest Artist (0.6).
+- `.github/agents/07-skier-motion.agent.md` – Skier Motion Artist (0.7).
+- `.github/agents/08-resort-infrastructure.agent.md` – Resort Architect (0.8).
+- `.github/agents/09-performance-map.agent.md` – Performance Cartographer (0.9).
 
-## Reduce time and cost
-1. For camera/zoom/skier scale/render resolution changes edit **config.js only** (no rebuild), or dispatch SMR Tune Agent.
-2. For graphics code changes, edit only affected functions and create ONE atomic commit containing all changes. No repetitive full-file GitHub commits or redundant deploys.
-3. Run `node tools/check.mjs` and visual Playwright screenshots at 1280x720 and 720x1280 before publishing.
-4. Use unique cache-busting ?v on scripts for a new release.
-5. Never call a screenshot 'actual gameplay' unless rendered by the game engine. Include performance notes.
-6. Keep WebGL mobile usable at 30 fps and avoid remote runtime assets.
-7. Don't delete previous versions from Git history; every release must be revertible.
+Agent uruchamiany przez GitHub Copilot Coding Agent dopiero po wybraniu/ przypisaniu go w zgłoszeniu (o ile konto ma funkcję aktywną). Plik `.agent.md` nie jest autonomicznym procesem i nie uruchamia płatnych zadań samoczynnie. Każdy agent otrzymuje odrębny issue. Programowanie może również wykonać ChatGPT przez istniejący konektor GitHub.
 
-## SMR Tune Agent (GitHub Actions, zero AI-token cost)
-On a repository Issue, a maintainer can comment:
-`/tune cameraDistance 30`
-or `/tune skierScale 1.12`
-or run Actions > SMR Tune Agent - quick changes > Run workflow. The bot validates inputs, commits config.js and GitHub Pages republishes. Allowed values:
-cameraDistance 19..60, cameraHeight 12..50, cameraLead 14..70, skierScale 0.6..1.4, renderScale 0.55..1.
-This is **not** a self-directed generative AI coder. It is a deterministic, safe tuning bot. For new models/features, ask the coding assistant to modify game.js via GitHub and test.
+## Kryteria
+1. Każdy etap musi mieć screenshot rzeczywiście wyrenderowany w grze w 1280×720 i 390×844, a nie obraz AI.
+2. Każdy etap musi zaliczyć sprawdzenie składni, weryfikację WebGL i dotykowego sterowania.
+3. Raportuj liczbę obiektów, wydajność orientacyjną w CI i rzeczywistą na Androidzie, jeśli dostępna. Nie obiecuj FPS bez pomiaru.
+4. Najpierw osobna gałąź i PR, potem zgoda na scalenie. Na `main` testowane poprawki.
+5. Nie dodawaj cudzych modeli bez jawnej licencji.
+6. Minimalizuj koszty: jeden zakres/agent, bez wzajemnego nadpisywania plików, odseparowane sceny i pipeline graficzny tylko przy zmianach.

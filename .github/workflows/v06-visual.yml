@@ -1,0 +1,34 @@
+name: SMR 0.6 visual QA
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'v06/**'
+      - '.github/workflows/v06-visual.yml'
+  pull_request:
+    paths:
+      - 'v06/**'
+      - '.github/workflows/v06-visual.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  screenshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntax check
+        run: node --check v06/game.js
+      - name: Install browser
+        run: |
+          npm install --no-save playwright
+          npx playwright install chromium --with-deps
+      - name: Browser QA (desktop and portrait)
+        run: node v06/visual-qa.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smr-stage2-snow-forest-screens
+          path: v06/qa/
+          retention-days: 14
