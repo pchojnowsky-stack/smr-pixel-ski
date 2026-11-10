@@ -75,13 +75,13 @@
   }
   tctx.putImageData(img,0,0);snowTexture.update();
   snowTexture.uScale=30;snowTexture.vScale=43;
-  snow.diffuseTexture=snowTexture;snow.useVertexColors=true;
+  snow.diffuseTexture=snowTexture;snow.useVertexColors=true;snow.backFaceCulling=false;
   const pisteTexture=new B.DynamicTexture('grooming marks',{width:256,height:256},scene,false);
   const pc=pisteTexture.getContext();pc.fillStyle='#faffff';pc.fillRect(0,0,256,256);
   for(let x=0;x<256;x+=7){pc.fillStyle=x%3?'#f3f9fc':'#eaf4fa';pc.fillRect(x,0,1,256);}
   for(let y=0;y<256;y+=23){pc.fillStyle='#f5fcff';pc.fillRect(0,y,256,2);}
   pisteTexture.update();pisteTexture.uScale=7;pisteTexture.vScale=34;
-  piste.diffuseTexture=pisteTexture;
+  piste.diffuseTexture=pisteTexture;piste.backFaceCulling=false;
   // Build a real height-field mesh with normals so the terrain reacts to low winter sunlight.
   function makeHeightField(){
     const pos=[],uv=[],colors=[],indices=[];
