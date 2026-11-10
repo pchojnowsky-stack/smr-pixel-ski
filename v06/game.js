@@ -177,8 +177,8 @@
   const transforms=[];
   function addTree(x,z,s){const mat=B.Matrix.Compose(new B.Vector3(s,s,s),B.Quaternion.RotationAxis(B.Axis.Y,random()*Math.PI*2),V(x,height(x,z)-.6,z));mat.copyToArray(transforms,transforms.length);}
   for(let i=0;i<850;i++){
-    const z=48+random()*820,side=random()<.5?-1:1;
-    const dist=pisteWidth(z)+12+Math.pow(random(),1.55)*165;
+    const z=18+random()*715,side=random()<.5?-1:1;
+    const dist=pisteWidth(z)+5+Math.pow(random(),2.4)*95;
     const x=center(z)+side*dist;
     if(Math.abs(x)>355)continue;
     addTree(x,z,.57+random()*.58);
@@ -260,7 +260,7 @@
   const state={mode:'menu',x:center(0),z:0,speed:13,lean:0,time:0,fps:0};
   const startElement=$('start'),overlay=$('overlay');
   const setMode=m=>{state.mode=m;overlay.hidden=m==='play';$('pause').textContent=m==='pause'?'▶':'Ⅱ';};
-  const reset=()=>{state.x=center(0);state.z=0;state.speed=13;state.lean=0;state.time=0;skier.position=V(state.x,height(state.x,0)+.25,0);camera.position=V(state.x+1.4,height(state.x,0)+43,-30);camera.setTarget(V(state.x,height(state.x,0)+1,34));};
+  const reset=()=>{state.x=center(0);state.z=0;state.speed=13;state.lean=0;state.time=0;skier.position=V(state.x,height(state.x,0)+.25,0);camera.position=V(state.x+1.4,height(state.x,0)+59,-44);camera.setTarget(V(state.x,height(state.x,0)+1,65));};
   const play=()=>{if(state.mode!=='pause')reset();setMode('play');};
   const pause=()=>{if(state.mode==='play'){$('heading').textContent='PAUZA';$('subheading').textContent='Wznów zjazd, aby kontynuować test nowej kamery i oświetlenia.';startElement.textContent='▶ KONTYNUUJ';setMode('pause');}else if(state.mode==='pause')setMode('play');};
   startElement.onclick=play;$('pause').onclick=pause;
@@ -323,7 +323,7 @@
   // Fixed world-scale chase camera; angle ~53 degrees down to the skier's viewing area.
   function updateCamera(dt){
     const x=state.x,z=state.z,y=height(x,z);
-    const wanted=V(x+1.4,y+43,z-30),view=V(x,y+1,z+34);
+    const wanted=V(x+1.4,y+59,z-44),view=V(x,y+1,z+65);
     camera.position=B.Vector3.Lerp(camera.position,wanted,clamp(dt*3.6,0,1));
     const target=B.Vector3.Lerp(camera.getTarget(),view,clamp(dt*3.9,0,1));
     camera.setTarget(target);
