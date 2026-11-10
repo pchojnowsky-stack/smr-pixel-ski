@@ -242,7 +242,7 @@
   const state={mode:'menu',x:center(0),z:0,speed:13,lean:0,time:0,fps:0};
   const startElement=$('start'),overlay=$('overlay');
   const setMode=m=>{state.mode=m;overlay.hidden=m==='play';$('pause').textContent=m==='pause'?'▶':'Ⅱ';};
-  const reset=()=>{state.x=center(0);state.z=0;state.speed=13;state.lean=0;state.time=0;skierController.reset();trailL=[];trailR=[];lastTraceZ=0;skier.position=V(state.x,height(state.x,0)+.22,0);camera.position=V(state.x+1.4,height(state.x,0)+59,-44);camera.setTarget(V(state.x,height(state.x,0)+1,65));};
+  const reset=()=>{state.x=center(0);state.z=0;state.speed=13;state.lean=0;state.time=0;skierController.reset();trailL=[];trailR=[];lastTraceZ=0;skier.position=V(state.x,height(state.x,0)+.22,0);camera.position=V(state.x+1.4,height(state.x,0)+46,-37);camera.setTarget(V(state.x,height(state.x,0)+1,27));};
   const play=()=>{if(state.mode!=='pause')reset();setMode('play');};
   const pause=()=>{if(state.mode==='play'){$('heading').textContent='PAUZA';$('subheading').textContent='Wznów zjazd, aby kontynuować test nowej kamery i oświetlenia.';startElement.textContent='▶ KONTYNUUJ';setMode('pause');}else if(state.mode==='pause')setMode('play');};
   startElement.onclick=play;$('pause').onclick=pause;
@@ -304,7 +304,7 @@
   // Fixed world-scale chase camera; angle ~53 degrees down to the skier's viewing area.
   function updateCamera(dt){
     const x=state.x,z=state.z,y=height(x,z);
-    const wanted=V(x+1.4,y+59,z-44),view=V(x,y+1,z+65);
+    const wanted=V(x+1.4,y+46,z-37),view=V(x,y+1,z+27);
     camera.position=B.Vector3.Lerp(camera.position,wanted,clamp(dt*3.6,0,1));
     const target=B.Vector3.Lerp(camera.getTarget(),view,clamp(dt*3.9,0,1));
     camera.setTarget(target);
