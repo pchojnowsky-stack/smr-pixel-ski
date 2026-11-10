@@ -260,7 +260,7 @@
   const state={mode:'menu',x:center(0),z:0,speed:13,lean:0,time:0,fps:0};
   const startElement=$('start'),overlay=$('overlay');
   const setMode=m=>{state.mode=m;overlay.hidden=m==='play';$('pause').textContent=m==='pause'?'▶':'Ⅱ';};
-  const reset=()=>{state.x=center(0);state.z=0;state.speed=13;state.lean=0;state.time=0;skier.position=V(state.x,height(state.x,0)+.25,0);camera.position=V(state.x,height(state.x,0)+82,-38);};
+  const reset=()=>{state.x=center(0);state.z=0;state.speed=13;state.lean=0;state.time=0;skier.position=V(state.x,height(state.x,0)+.25,0);camera.position=V(state.x+1.4,height(state.x,0)+43,-30);camera.setTarget(V(state.x,height(state.x,0)+1,34);};
   const play=()=>{if(state.mode!=='pause')reset();setMode('play');};
   const pause=()=>{if(state.mode==='play'){$('heading').textContent='PAUZA';$('subheading').textContent='Wznów zjazd, aby kontynuować test nowej kamery i oświetlenia.';startElement.textContent='▶ KONTYNUUJ';setMode('pause');}else if(state.mode==='pause')setMode('play');};
   startElement.onclick=play;$('pause').onclick=pause;
@@ -346,5 +346,5 @@
     get:()=>({version:'0.6.0',renderer:'Babylon.js',mode:state.mode,distance:state.z,speed:state.speed,fps:Math.round(engine.getFps()),trees:transforms.length/16,meshes:scene.meshes.length,stage:'06-snow-forest',activeCamera:camera.position.asArray()}),
     start:play,reset,engine,scene
   };
-  reset();camera.setTarget(V(state.x,height(state.x,0)+1,26));
+  reset();
 })();
