@@ -21,7 +21,7 @@
   scene.skipPointerMovePicking=true;
   scene.autoClear=true;
   camera=new B.FreeCamera('alpine-camera',new B.Vector3(0,300,-45),scene);
-  camera.fov=.86;camera.minZ=.5;camera.maxZ=1800;
+  camera.fov=.78;camera.minZ=.5;camera.maxZ=1800;
   camera.inputs.clear();scene.activeCamera=camera;
   const sky=new B.HemisphericLight('winter skylight',new B.Vector3(-.15,1,.2),scene);
   sky.diffuse=new B.Color3(.85,.91,1);sky.groundColor=new B.Color3(.59,.70,.83);sky.intensity=.79;
@@ -29,7 +29,7 @@
   sun.position=new B.Vector3(260,410,-140);
   sun.diffuse=new B.Color3(1,.93,.85);sun.intensity=1.18;
   let shadows;
-  try { shadows=new B.ShadowGenerator(mobile?1024:1536,sun);shadows.usePercentageCloserFiltering=true;shadows.bias=.00045;shadows.normalBias=.035; }
+  try { shadows=new B.ShadowGenerator(mobile?768:1024,sun);shadows.usePercentageCloserFiltering=true;shadows.bias=.00045;shadows.normalBias=.035; }
   catch(e) { console.warn('Shadow initialization:',e.message); }
   const V=(x,y,z)=>new B.Vector3(x,y,z);
   const RGB=(r,g,b)=>new B.Color3(r,g,b);
@@ -129,7 +129,7 @@
   const tri=(a,b,c)=>indices.push(a,b,c);
   const greens=[[.060,.255,.212],[.070,.302,.255],[.086,.340,.279],[.047,.219,.209],[.11,.355,.290],[.09,.312,.292]];
   const snowcaps=[[.81,.88,.95],[.90,.95,.99],[.77,.86,.94]];
-  const petals=11,whorls=10;
+  const petals=8,whorls=8;
   // Six-sided brown trunk peeks through thinner lower branches.
   for(let k=0;k<6;k++){
     const a=k*Math.PI/3,b=(k+1)*Math.PI/3;
@@ -176,7 +176,7 @@
   tree.material=treeMat;tree.isPickable=false;tree.receiveShadows=false;
   const transforms=[];
   function addTree(x,z,s){const mat=B.Matrix.Compose(new B.Vector3(s,s,s),B.Quaternion.RotationAxis(B.Axis.Y,random()*Math.PI*2),V(x,height(x,z)-.6,z));mat.copyToArray(transforms,transforms.length);}
-  for(let i=0;i<1150;i++){
+  for(let i=0;i<850;i++){
     const z=48+random()*820,side=random()<.5?-1:1;
     const dist=pisteWidth(z)+12+Math.pow(random(),1.55)*165;
     const x=center(z)+side*dist;
@@ -323,7 +323,7 @@
   // Fixed world-scale chase camera; angle ~53 degrees down to the skier's viewing area.
   function updateCamera(dt){
     const x=state.x,z=state.z,y=height(x,z);
-    const wanted=V(x+1.4,y+62,z-36),view=V(x,y+1,z+45);
+    const wanted=V(x+1.4,y+43,z-30),view=V(x,y+1,z+34);
     camera.position=B.Vector3.Lerp(camera.position,wanted,clamp(dt*3.6,0,1));
     const target=B.Vector3.Lerp(camera.getTarget(),view,clamp(dt*3.9,0,1));
     camera.setTarget(target);
