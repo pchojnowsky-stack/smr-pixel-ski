@@ -2,224 +2,89 @@
 <html lang="pl">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
-<meta name="theme-color" content="#10233e">
-<meta name="description" content="SMR Pixel Ski - mobilna gra narciarska 3D, wersja 0.1">
-<title>SMR Pixel Ski · 0.1</title>
-<link rel="manifest" href="manifest.webmanifest">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#112841">
+<meta name="description" content="SMR Pixel Ski 0.2 — grywalny zjazd 3D przez stylizowany ośrodek narciarski">
+<link rel="manifest" href="./manifest.webmanifest">
+<title>SMR Pixel Ski · 0.2</title>
 <style>
-:root{color-scheme:dark;--navy:#142943;--ice:#caedff;--blue:#4aafff;--orange:#ff9142;--shadow:0 5px 0 #071324,0 9px 28px #08192e80}
+:root{--dark:#10223c;--accent:#ffd66b;--blue:#b9efff}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#84c4e7;color:#fff;font-family:ui-monospace,'Arial Black',system-ui,sans-serif;overscroll-behavior:none;user-select:none;-webkit-user-select:none}
-#renderCanvas{position:fixed;inset:0;display:block;width:100%;height:100%;outline:0;touch-action:none;image-rendering:auto}
-#screenFX{pointer-events:none;position:fixed;inset:0;background:linear-gradient(to bottom,#142b5509 5%,transparent 35%,transparent 75%,#1e4b8420)}
-#top{position:fixed;top:max(12px,env(safe-area-inset-top));left:max(12px,env(safe-area-inset-left));right:max(12px,env(safe-area-inset-right));display:flex;align-items:flex-start;justify-content:space-between;gap:8px;z-index:4;pointer-events:none}
-.logo,.stat,.mini{background:#142741e8;border:2px solid #8fccf8b0;border-radius:13px;box-shadow:var(--shadow);backdrop-filter:blur(4px)}
-.logo{padding:9px 13px;line-height:1.05;font-weight:1000;font-size:clamp(12px,2vw,18px);letter-spacing:.4px;min-width:117px}
-.logo small{display:block;font-size:9px;opacity:.74;letter-spacing:2px;margin-top:5px}
-.stats{display:flex;gap:7px;align-items:flex-start}.stat{min-width:78px;padding:9px 10px;text-align:center}.stat label{display:block;font-size:9px;letter-spacing:.9px;color:#b9e6fa}.stat strong{display:block;font-size:18px;line-height:1.2;white-space:nowrap}.stat strong small{font-size:11px}
-#pause{width:39px;height:40px;pointer-events:auto;font-size:18px;border:2px solid #a8d8ff;background:#182d49ef;color:#fff;border-radius:11px;box-shadow:var(--shadow)}
-#controls{display:flex;position:fixed;left:max(16px,env(safe-area-inset-left));right:max(16px,env(safe-area-inset-right));bottom:max(17px,env(safe-area-inset-bottom));justify-content:space-between;align-items:flex-end;z-index:4;pointer-events:none}
-.group{display:flex;gap:12px;align-items:end;pointer-events:auto}.control{width:min(17vw,80px);height:min(17vw,80px);min-width:59px;min-height:59px;background:#102944a8;border:3px solid #c8ecffad;border-radius:21px;box-shadow:0 5px 0 #0a203a8c,inset 0 0 22px #fff2;display:grid;place-items:center;font-size:31px;font-weight:900;color:#fff;touch-action:none}.control:active,.control.held{background:#ff9958db;border-color:#fff4d5;transform:translateY(3px);box-shadow:0 2px 0 #63351e}
-.control.brake{width:72px;height:72px;font-size:13px;flex-direction:column;line-height:1.3}.control.brake span{font-size:25px}
-#progress{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);width:min(250px,34vw);padding:5px 9px 7px;background:#172a46ad;border:1px solid #9bcafc8c;border-radius:30px;z-index:3;pointer-events:none}
-#progress .caption{font-size:9px;text-align:center;letter-spacing:1.5px;opacity:.9;margin-bottom:3px}#progress .meter{height:7px;border-radius:5px;background:#0d1930;overflow:hidden}#bar{height:100%;width:0%;background:linear-gradient(90deg,#1de8ee,#fafaa1);transition:width .1s}
-#toast{position:fixed;left:50%;top:22%;transform:translateX(-50%);background:#173655e8;color:#fff;border:2px solid #c8efff;border-radius:12px;padding:11px 16px;font-size:13px;letter-spacing:.2px;pointer-events:none;opacity:0;z-index:5;text-align:center;transition:opacity .2s;max-width:85vw}
-#toast.show{opacity:1}
-#overlay{position:fixed;inset:0;display:grid;place-items:center;z-index:8;background:linear-gradient(180deg,#0a1c2db2,#0f2748a2);padding:18px;overflow-y:auto}
-.card{width:min(440px,93vw);background:#132c49f5;border:3px solid #aedff8;border-radius:20px;box-shadow:0 14px 0 #091d32,0 25px 60px #07162990;padding:24px 25px 25px;text-align:center}
-.card .mountain{font-size:40px;line-height:1;margin-bottom:10px}.card h1{font-size:clamp(27px,6vw,41px);letter-spacing:-1px;margin:0;color:#fff;text-shadow:3px 4px 0 #0e1d32}.card .ver{display:block;color:#92dfff;font-size:11px;margin-top:4px;letter-spacing:3px}.card p{color:#cce6f4;font-size:13px;line-height:1.6;margin:16px 0}.features{display:flex;justify-content:center;flex-wrap:wrap;gap:7px;margin-bottom:18px}.features span{font-size:10px;color:#d4eeff;border:1px solid #6f9cbe99;border-radius:10px;padding:6px 9px;background:#2a4666}
-.primary{appearance:none;border:0;cursor:pointer;background:linear-gradient(180deg,#ffb462,#f57630);color:#14233f;border-radius:12px;width:100%;padding:15px 18px;box-shadow:0 5px 0 #a43b18;font-size:17px;font-weight:1000;letter-spacing:.8px}.primary:active{transform:translateY(3px);box-shadow:0 2px 0 #a43b18}
-.foot{font-size:10px;color:#90bbd9;margin-top:14px;line-height:1.5}.small-btn{border:1px solid #71a8ce;border-radius:9px;background:#234563;color:white;padding:9px 12px;margin-top:8px;font-size:12px}
-#lowres{position:fixed;top:56px;right:max(13px,env(safe-area-inset-right));z-index:4;font-size:10px;opacity:.72;pointer-events:none}
-#fatal{position:fixed;inset:0;display:none;place-items:center;background:#10233e;color:white;z-index:50;padding:30px;text-align:center;font-size:15px;line-height:1.6}
-@media(max-width:650px) and (orientation:portrait){.logo{min-width:90px;padding:7px 9px;font-size:11px}.logo small{font-size:7px}.stats{gap:4px}.stat{min-width:60px;padding:7px 5px}.stat label{font-size:8px}.stat strong{font-size:14px}#pause{width:31px;height:34px}.control{min-width:63px;min-height:63px}.group{gap:8px}#progress{bottom:98px;width:190px}#lowres{top:55px}}
-@media(max-height:440px){.card{padding:14px 18px}.card .mountain{font-size:24px;margin-bottom:5px}.card h1{font-size:25px}.card p{margin:8px 0}.features{margin-bottom:10px}.card .foot{margin-top:9px}.control{width:65px;height:65px}.card .primary{padding:11px}.stat{padding:5px 9px}}
+html,body{height:100%;width:100%;margin:0;overflow:hidden;overscroll-behavior:none;background:#80b9e2;color:#fff;font-family:system-ui,-apple-system,Arial,sans-serif;touch-action:none}
+#game{position:absolute;width:100%;height:100%;inset:0;display:block;image-rendering:pixelated;touch-action:none}
+#vignette{position:absolute;inset:0;pointer-events:none;background:linear-gradient(0deg,#112b4345,transparent 27%,transparent 65%,#1334512a)}
+#hud{position:absolute;top:max(env(safe-area-inset-top),12px);left:max(env(safe-area-inset-left),12px);right:max(env(safe-area-inset-right),12px);display:flex;align-items:flex-start;gap:10px;z-index:10;pointer-events:none}
+.brand,.panel,.smallBtn,.control,.startCard,.toast,.badge{border:2px solid #bddff3;box-shadow:0 5px 0 #0b2135ab,0 9px 20px #1229416e;background:#112942e8}
+.brand{padding:10px 14px;line-height:1.08;border-radius:10px;white-space:nowrap}
+.brand strong{display:block;font-size:15px;font-weight:1000;letter-spacing:.8px}.brand small{display:block;font-size:9px;color:#9ed8f0;letter-spacing:2px;margin-top:6px}
+.hudRight{margin-left:auto;display:flex;gap:8px;align-items:flex-start}
+.panel{border-radius:10px;text-align:center;min-width:89px;padding:6px 10px 7px}
+.panel em{font-size:9px;letter-spacing:1px;display:block;font-style:normal;color:#b0d5e7;font-weight:800}
+.panel b{display:block;font-size:25px;line-height:1.17;font-weight:1000}
+.panel b span{font-size:12px}
+.smallBtn{color:white;pointer-events:auto;min-width:46px;height:53px;border-radius:10px;font-size:22px;font-weight:900;cursor:pointer}
+#levelTag{position:absolute;top:86px;left:12px;z-index:6;font-weight:850;color:#eafaff;text-shadow:0 2px 4px #0e263e;font-size:12px;letter-spacing:.5px;pointer-events:none}
+#controls{position:absolute;bottom:max(15px,env(safe-area-inset-bottom));left:max(16px,env(safe-area-inset-left));right:max(16px,env(safe-area-inset-right));z-index:11;display:flex;align-items:flex-end;justify-content:space-between;pointer-events:none}
+.ctrlGroup{display:flex;gap:12px;pointer-events:auto}
+.control{touch-action:none;user-select:none;color:white;width:82px;height:78px;border-radius:13px;background:#173652a9;font-size:30px;font-weight:1000;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.control.held{background:#ee9639db;border-color:#fff4d0;transform:translateY(3px);box-shadow:0 2px 0 #713b25}
+#brake{width:100px;display:flex;flex-direction:column;gap:0;font-size:12px;letter-spacing:1px}#brake b{font-size:25px;line-height:1.25}
+#progress{position:absolute;bottom:max(28px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:min(280px,32vw);z-index:9;pointer-events:none}
+#progressLabel{display:flex;justify-content:space-between;text-shadow:1px 2px 4px #10304d;font-size:10px;font-weight:900;letter-spacing:1px;margin-bottom:6px}
+#progressTrack{height:9px;background:#0e2946c9;border:2px solid #c4ebf8;border-radius:10px;overflow:hidden}
+#progressFill{height:100%;width:0%;background:#ffd268}
+#hint{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:12;pointer-events:none;max-width:75%;text-align:center;opacity:0;transition:opacity .2s;background:#122d4ada;color:white;border:2px solid #bbe6f8;padding:9px 16px;border-radius:10px;font-weight:800;font-size:14px}
+#hint.show{opacity:1}
+#worldLabels{position:absolute;inset:0;pointer-events:none;z-index:3;overflow:hidden}
+.worldLabel{position:absolute;transform:translate(-50%,-100%);background:#14334ddc;color:#fff;border:2px solid #c2eaff;border-radius:8px;padding:6px 9px;white-space:nowrap;letter-spacing:.7px;font-size:12px;font-weight:1000;text-shadow:0 1px 2px #10233b;box-shadow:0 3px 0 #10243f;opacity:.96}
+.worldLabel:after{content:'';position:absolute;left:calc(50% - 1px);width:2px;height:14px;background:#d7f5fc;top:100%}
+#overlay{z-index:30;position:absolute;inset:0;background:#102c477a;display:flex;align-items:center;justify-content:center;padding:15px;overflow-y:auto}
+.startCard{width:min(480px,96vw);background:#122a45f6;border:3px solid #caedff;border-radius:16px;padding:24px 28px;text-align:center}
+.pill{display:inline-block;background:#22425c;color:#bde9fa;border-radius:6px;border:1px solid #88cbe3;padding:6px 11px;font-weight:900;font-size:10px;letter-spacing:2px}
+.startCard h1{margin:10px 0 6px;font-size:clamp(27px,5.5vw,46px);line-height:1;font-weight:1000;color:#fff;letter-spacing:-.5px;text-shadow:3px 4px 0 #071b32}
+.startCard h2{color:#ffdd80;font-size:15px;margin:6px 0 12px;letter-spacing:1.2px}
+.startCard p{font-size:13px;line-height:1.5;color:#c9e4f3;max-width:360px;margin:10px auto 15px}
+#start{border:none;background:#ffd46c;color:#182944;font-size:17px;font-weight:1000;letter-spacing:1.4px;border-radius:9px;box-shadow:0 6px 0 #ab6d2e;width:100%;padding:15px 18px;cursor:pointer}
+#start:active{transform:translateY(4px);box-shadow:0 2px 0 #ab6d2e}
+.note{margin-top:13px;font-size:10px;color:#a9c8d8}
+#webglError{display:none;position:absolute;inset:0;z-index:50;align-items:center;justify-content:center;text-align:center;background:#10243c;color:#fff;padding:25px;font-size:14px;line-height:1.6}
+#debug{position:absolute;right:12px;top:75px;font:10px monospace;color:#e7ffff;text-shadow:1px 1px 2px #183553;z-index:4;pointer-events:none;opacity:.7}
+@media (max-width:720px){.brand{padding:7px 9px}.brand strong{font-size:12px}.brand small{font-size:7px;margin-top:4px}.hudRight{gap:5px}.panel{min-width:68px;padding:5px 6px}.panel b{font-size:19px}.panel em{font-size:8px}.smallBtn{min-width:38px;height:44px;font-size:17px}.control{height:65px;width:67px;font-size:27px}#brake{width:81px;font-size:10px}#progress{width:200px;bottom:25px}#levelTag{top:66px;font-size:10px}#debug{top:65px}.worldLabel{font-size:10px;padding:4px 6px}}
+@media (max-width:540px) and (orientation:portrait){.brand{max-width:100px}.brand strong{white-space:normal;font-size:10px}.panel{min-width:60px}.panel b{font-size:15px}#levelTag{top:75px}#progress{bottom:105px;width:210px}.startCard{padding:19px}}
+@media (max-height:480px){.startCard{padding:13px 22px}.startCard h1{font-size:28px}.startCard h2{margin:3px 0 6px}.startCard p{font-size:11px;margin:6px auto 9px}.note{margin-top:7px}.control{height:57px;width:63px}#brake{height:57px}}
 </style>
 </head>
 <body>
-<canvas id="renderCanvas" aria-label="Trójwymiarowy stok narciarski"></canvas>
-<div id="screenFX"></div>
-<div id="top"><div class="logo">⛰ SMR PIXEL SKI<small>ALPHA 0.1 • TEST</small></div><div class="stats"><div class="stat"><label>PRĘDKOŚĆ</label><strong><span id="speed">0</span><small> km/h</small></strong></div><div class="stat"><label>GWIAZDKI</label><strong>★ <span id="score">0</span></strong></div><button id="pause" aria-label="Pauza">Ⅱ</button></div></div>
-<div id="lowres">PIXEL 3D / LOW POLY</div>
-<div id="progress"><div class="caption">TRASA TESTOWA • <span id="distance">0</span> / 1 600 m</div><div class="meter"><div id="bar"></div></div></div>
-<div id="toast"></div>
-<div id="controls"><div class="group"><button class="control" id="left" aria-label="Skręt w lewo">❮</button><button class="control" id="right" aria-label="Skręt w prawo">❯</button></div><div class="group"><button class="control brake" id="brake" aria-label="Hamowanie"><span>▰</span>HAMUJ</button></div></div>
-<div id="overlay"><section class="card"><div class="mountain">🏔️ 🎿</div><h1 id="overlayTitle">SMR PIXEL SKI</h1><span class="ver">WERSJA GRYWALNA 0.1</span><p id="overlayDescription">Pierwszy grywalny stok w estetyce retro low-poly. Skręcaj, omijaj drzewa, zbieraj gwiazdki i dojedź do dolnej stacji!</p><div class="features"><span>🎿 Zjazd 3D</span><span>🚡 Gondole</span><span>🏔️ Góry</span><span>☕ Bar</span></div><button id="play" class="primary">▶ ZACZNIJ ZJAZD</button><div class="foot">Telefon: przyciski ❮ ❯ + HAMUJ<br>Komputer: strzałki / A D + spacja<br>Trasa inspirowana Beskidami — to nie mapa SMR 1:1.</div></section></div>
-<div id="fatal"></div>
-<script src="https://cdn.babylonjs.com/babylon.js"></script>
-<script>
-(()=>{
-'use strict';
-const $=(s)=>document.getElementById(s), VERSION='0.1.0',END=1600;
-const canvas=$('renderCanvas');
-// Standalone 2.5D mobile fallback: playable even with no external engine access.
-function startFallback(){
-const ctx=canvas.getContext('2d',{alpha:false});if(!ctx){$('fatal').style.display='grid';$('fatal').textContent='Brak Canvas 2D';return;}
-let S={x:0,z:20,v:11,score:0,lean:0},status='menu',key={left:false,right:false,brake:false},items=[],trees=[],cabins=[],last=0,clock=0,notif=0;
-const END=1600,W=()=>canvas.width,H=()=>canvas.height;
-const cx=z=>44*Math.sin(z/205)+21*Math.sin(z/89);
-const wd=z=>28+4*Math.sin(z/180);
-const h=(x,z)=>247-.245*z+.00052*(x-cx(z))**2+4.3*Math.sin(z/108)+2.4*Math.cos(z/48)+3.8*Math.sin(x/104+z/157);
-let seed=53131;const rand=()=>{seed=(Math.imul(seed,1664525)+1013904223)|0;return (seed>>>0)/4294967296;};
-for(let z=20;z<1880;z+=13)for(let s of [-1,1])for(let k=0;k<2;k++){let x=cx(z)+s*(46+k*43+rand()*85);trees.push({x,z:z+(rand()-.5)*20,size:.7+rand()*.75});}
-for(let i=0;i<10;i++){let z=145+i*138;items.push({x:cx(z)+(i%3-1)*9,z,got:false});}
-for(let i=0;i<10;i++)cabins.push({index:i});
-function size(){let dpr=1;canvas.width=Math.max(320,Math.round(innerWidth*dpr*.83));canvas.height=Math.max(240,Math.round(innerHeight*dpr*.83));}
-window.addEventListener('resize',size);size();
-function show(m){status=m;$('overlay').style.display=m==='play'?'none':'grid';$('pause').textContent=m==='pause'?'▶':'Ⅱ';}
-function reset(){S={x:cx(20),z:20,v:11,score:0,lean:0};items.forEach(x=>x.got=false);$('score').textContent='0';}
-function toast(t){$('toast').textContent=t;$('toast').classList.add('show');notif=1.7;}
-function start(){reset();show('play');toast('JAZDA! ZBIERAJ GWIAZDKI');}
-function finish(){show('end');$('overlayTitle').textContent='META! 🏁';$('overlayDescription').textContent='Ukończona trasa 1600 m. Zdobyte gwiazdki: '+S.score+' / '+items.length+'.';$('play').textContent='↻ JEDŹ JESZCZE RAZ';}
-function pause(){if(status==='play'){show('pause');$('overlayTitle').textContent='PAUZA';$('overlayDescription').textContent='Wznów zjazd i spróbuj zdobyć więcej gwiazdek.';$('play').textContent='▶ WZNÓW';}else if(status==='pause')show('play');}
-$('play').addEventListener('click',()=>{if(status==='pause')show('play');else start();});$('pause').addEventListener('click',pause);
-function bind(id,k){const e=$(id);e.addEventListener('pointerdown',v=>{v.preventDefault();key[k]=true;e.classList.add('held');try{e.setPointerCapture(v.pointerId);}catch(err){}});for(let t of ['pointerup','pointercancel','lostpointercapture'])e.addEventListener(t,v=>{v.preventDefault();key[k]=false;e.classList.remove('held');});}
-bind('left','left');bind('right','right');bind('brake','brake');
-window.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','ArrowDown',' ','a','d','A','D','Escape'].includes(e.key))e.preventDefault();if(e.key==='ArrowLeft'||e.key.toLowerCase()==='a')key.left=true;if(e.key==='ArrowRight'||e.key.toLowerCase()==='d')key.right=true;if(e.key===' '||e.key==='ArrowDown')key.brake=true;if(e.key==='Escape')pause();});
-window.addEventListener('keyup',e=>{if(e.key==='ArrowLeft'||e.key.toLowerCase()==='a')key.left=false;if(e.key==='ArrowRight'||e.key.toLowerCase()==='d')key.right=false;if(e.key===' '||e.key==='ArrowDown')key.brake=false;});
-document.addEventListener('visibilitychange',()=>{if(document.hidden&&status==='play')pause();});
-function update(dt){let steer=(key.right?1:0)-(key.left?1:0),off=Math.abs(S.x-cx(S.z))>wd(S.z)+6,sl=(h(S.x,S.z)-h(S.x,S.z+2))/2;
-S.v=Math.max(3.2,Math.min(25,S.v+(6.6+sl*12-.027*S.v*S.v-(key.brake?19:0)-(off?12:0))*dt));S.z+=S.v*dt;S.x+=steer*S.v*.84*dt+(cx(S.z)-S.x)*.26*dt;S.lean+=(steer-S.lean)*Math.min(1,dt*7);
-for(let a of items)if(!a.got&&Math.abs(a.z-S.z)<5&&Math.abs(a.x-S.x)<6){a.got=true;S.score++;toast('★ GWIAZDKA!');}
-if(off&&Math.floor(clock)%9===0&&notif<.1)toast('UWAGA! POZA TRASĄ');
-$('speed').textContent=Math.round(S.v*3.6);$('distance').textContent=Math.min(END,Math.floor(Math.max(0,S.z-20))).toLocaleString('pl-PL');$('bar').style.width=Math.min(100,Math.max(0,S.z/END*100))+'%';$('score').textContent=S.score;
-if(S.z>=END+25)finish();}
-function poly(points,color){if(points.some(p=>!p))return;ctx.beginPath();ctx.moveTo(points[0][0],points[0][1]);for(let i=1;i<points.length;i++)ctx.lineTo(points[i][0],points[i][1]);ctx.closePath();ctx.fillStyle=color;ctx.fill();}
-function ln(a,b,color,width){if(!a||!b)return;ctx.strokeStyle=color;ctx.lineWidth=Math.max(.5,width||1);ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();}
-function project(x,y,z){const zz=z-(S.z-28),cy=h(S.x,S.z)+13,dy=y-cy,p=-.21,cc=Math.cos(p),ss=Math.sin(p),depth=zz*cc+dy*ss;if(depth<2)return null;const f=Math.max(W()*.93,H()*.94);return [W()/2+(x-S.x)*f/depth,H()*.51-(dy*cc-zz*ss)*f/depth,Math.max(.1,f/depth)];}
-function mountainSky(){let g=ctx.createLinearGradient(0,0,0,H());g.addColorStop(0,'#679fd9');g.addColorStop(.55,'#c0e4ff');g.addColorStop(1,'#fcf4db');ctx.fillStyle=g;ctx.fillRect(0,0,W(),H());for(let l=0;l<3;l++){ctx.beginPath();let base=H()*(.44+.055*l);ctx.moveTo(0,H());for(let x=0;x<=W();x+=28){let y=base-((Math.sin(x/95+l*2)+Math.cos(x/51-l))*25+Math.sin(x/21+l)*10)*(1.5-l*.3);ctx.lineTo(x,y);}ctx.lineTo(W(),H());ctx.closePath();ctx.fillStyle=['#b2c7e4','#9db8d7','#799dbb'][l];ctx.globalAlpha=.32;ctx.fill();ctx.globalAlpha=1;}}
-function terrain(){let max=S.z+660;for(let z=max;z>S.z-10;z-=13){let z2=z+13;for(let x=-350;x<350;x+=38){let a=project(x,h(x,z),z),b=project(x+38,h(x+38,z),z),c=project(x+38,h(x+38,z2),z2),d=project(x,h(x,z2),z2);poly([a,b,c,d],((x/38+Math.floor(z/13))%4===0)?'#d7eaf7':'#e5f2fc');}
-let p1=project(cx(z)-wd(z),h(cx(z)-wd(z),z)+.4,z),p2=project(cx(z)+wd(z),h(cx(z)+wd(z),z)+.4,z),p3=project(cx(z2)+wd(z2),h(cx(z2)+wd(z2),z2)+.4,z2),p4=project(cx(z2)-wd(z2),h(cx(z2)-wd(z2),z2)+.4,z2);poly([p1,p2,p3,p4],((Math.floor(z/13)%3===0)?'#fbffff':'#f1f9ff'));
-for(let side=-.85;side<=.85;side+=.17){let pa=project(cx(z)+wd(z)*side,h(cx(z)+wd(z)*side,z)+.6,z),pb=project(cx(z2)+wd(z2)*side,h(cx(z2)+wd(z2)*side,z2)+.6,z2);ln(pa,pb,'#d5e9f5',.8);}
-}}
-function tree(t){let y=h(t.x,t.z),a=project(t.x,y,t.z),b=project(t.x,y+13*t.size,t.z);if(!a||!b)return;let sc=a[2]*t.size;if(sc<.6)return;let rad=Math.min(75,sc*3.3),top=b[1],base=a[1];ctx.fillStyle='#6d5850';ctx.fillRect(a[0]-sc*.3,base-4*sc,sc*.6,4*sc);poly([[a[0],top+5*sc],[a[0]-rad,base-1*sc],[a[0]+rad,base-1*sc]],'#145c59');poly([[a[0],top+2*sc],[a[0]-rad*.77,base-4*sc],[a[0]+rad*.77,base-4*sc]],'#27746c');poly([[a[0],top],[a[0]-rad*.40,top+5*sc],[a[0]+rad*.4,top+5*sc]],'#edf9ff');}
-function tower(z){let x=cx(z)+91,y=h(x,z),b=project(x,y,z),top=project(x,y+29,z);if(!b||!top)return;let s=Math.max(1,b[2]);ln(b,top,'#657b8c',Math.min(8,2.5*s));let l=project(x-14,y+29,z),r=project(x+14,y+29,z);ln(l,r,'#50677b',Math.min(9,1.9*s));let foot=project(x,y+4,z);ln(b,foot,'#ff7d38',Math.min(13,3*s));}
-function gondola(z,side){let x=cx(z)+91+side*5,y=h(cx(z)+91,z)+25,p=project(x,y,z);if(!p)return;let s=Math.min(22,p[2]*3);let px=p[0],py=p[1];ln([px,py],[px,py+s*.7],'#3b4d67',Math.max(1,s*.16));ctx.fillStyle='#dc4b3d';ctx.fillRect(px-s*.68,py+s*.45,s*1.36,s*1.12);ctx.fillStyle='#7cc4e6';ctx.fillRect(px-s*.55,py+s*.57,s*1.1,s*.55);ctx.fillStyle='#1c314c';ctx.fillRect(px-s*.62,py+s*1.43,s*1.24,s*.18);}
-function cabinBuilding(x,z,label){let y=h(x,z),p=project(x,y,z);if(!p)return;let scl=Math.min(10,p[2]),w=19*scl,hh=9*scl;x=p[0];let py=p[1];if(w<4)return;poly([[x-w/2,py],[x+w/2,py],[x+w/2,py-hh],[x-w/2,py-hh]],'#9d663f');poly([[x-w*.6,py-hh],[x+w*.6,py-hh],[x,py-hh-5*scl]],'#f6fcff');ctx.fillStyle='#f8c978';ctx.fillRect(x-w*.37,py-hh*.72,w*.74,hh*.52);ctx.fillStyle='#183a59';ctx.font='bold '+Math.max(6,2.2*scl)+'px monospace';ctx.textAlign='center';ctx.fillText(label,x,py-hh*1.02);ctx.textAlign='left';}
-function npcFigure(x,z,color='#e66e39'){let y=h(x,z),p=project(x,y,z);if(!p)return;let s=Math.min(12,p[2]*1.2);if(s<.5)return;ctx.strokeStyle='#1b2d44';ctx.lineWidth=Math.max(.5,s*.18);ctx.beginPath();ctx.moveTo(p[0]-2*s,p[1]);ctx.lineTo(p[0]+2*s,p[1]+s*.4);ctx.stroke();ctx.fillStyle=color;ctx.fillRect(p[0]-s*.6,p[1]-s*3,s*1.2,s*2);ctx.fillStyle='#263547';ctx.fillRect(p[0]-s*.5,p[1]-s*3.7,s,s*.85);}
-function star(x,z){let y=h(x,z)+3.5+Math.sin(clock*3+z)*.5,p=project(x,y,z);if(!p)return;let s=Math.max(2,Math.min(28,p[2]*1.8));ctx.save();ctx.translate(p[0],p[1]);ctx.rotate(clock*1.3);ctx.fillStyle='#ffe078';ctx.beginPath();for(let j=0;j<10;j++){let a=j*Math.PI/5-Math.PI/2,rad=j%2?s*.45:s;ctx.lineTo(Math.cos(a)*rad,Math.sin(a)*rad);}ctx.fill();ctx.restore();}
-function player(){let x=W()/2+S.lean*1.5,y=H()*.79,s=Math.min(W(),H())*.057;ctx.save();ctx.translate(x,y);ctx.rotate(-S.lean*.11);
-ln([-1.25*s,1*s],[-.6*s,4*s],'#ddfb4e',s*.28);ln([1.25*s,1*s],[.6*s,4*s],'#ddfb4e',s*.28);
-poly([[-1.2*s,-1.4*s],[1.2*s,-1.4*s],[1.35*s,1.3*s],[-1.35*s,1.3*s]],'#d64a38');poly([[-.95*s,-2.3*s],[.95*s,-2.3*s],[.6*s,-3.0*s],[-.7*s,-3.0*s]],'#263850');ctx.fillStyle='#83bce3';ctx.fillRect(-.6*s,-2.1*s,1.2*s,.55*s);ctx.fillStyle='#367fb3';ctx.fillRect(-.65*s,-.9*s,1.3*s,1.7*s);
-ln([-1*s,-1.0*s],[-2.3*s,1.4*s],'#ec7563',.7*s);ln([1*s,-1*s],[2.3*s,1.4*s],'#ec7563',.7*s);
-ln([-2.3*s,1.4*s],[-2.7*s,4.3*s],'#273647',.13*s);ln([2.3*s,1.4*s],[2.7*s,4.3*s],'#273647',.13*s);
-ctx.restore();}
-function render(){mountainSky();terrain();const far=S.z+650;for(let i=trees.length-1;i>=0;i--){let t=trees[i];if(t.z>S.z-8&&t.z<far)tree(t);}for(let z=45;z<1780;z+=215)if(z>S.z-10&&z<far)tower(z);
-for(let z=S.z+600;z>S.z;z-=30){let a=project(cx(z)+85,h(cx(z)+91,z)+29,z),b=project(cx(z+30)+85,h(cx(z+30)+91,z+30)+29,z+30);ln(a,b,'#5c6b80',1.7);}
-for(let i=0;i<10;i++){let z=45+(clock*15+i*172)%1690;if(z>S.z-10&&z<far)gondola(z,i%2?1:-1);}
-for(let z of [655,1450])if(z>S.z-15&&z<far)cabinBuilding(cx(z)+100,z,z===655?'BAR NA STOKU':'SOLISKO');
-for(let i=0;i<12;i++){let z=150+i*120;if(z>S.z-10&&z<far)npcFigure(cx(z)+(i%3-1)*12,z,i%2?'#3c94db':'#e56b48');}
-for(let item of items)if(!item.got&&item.z>S.z-10&&item.z<far)star(item.x,item.z);
-for(let z=Math.floor((S.z+400)/28)*28;z>S.z-10;z-=28){for(let side of [-1,1]){let x=cx(z)+side*(wd(z)+4),p=project(x,h(x,z)+2,z);if(p){let hh=Math.min(33,p[2]*2.5);ctx.fillStyle='#f26542';ctx.fillRect(p[0]-1,p[1]-hh,Math.max(1,p[2]*.45),hh);}}}
-player();}
-function loop(ms){let dt=Math.min(.04,(ms-last)/1000||.016);last=ms;clock+=dt;if(status==='play')update(dt);if(notif>0){notif-=dt;if(notif<=0)$('toast').classList.remove('show');}render();requestAnimationFrame(loop);}
-reset();requestAnimationFrame(loop);
-}
-
-if(!window.BABYLON){startFallback();return;}
-let engine,scene,camera,skier,starObjects=[],cabins=[],npc=[],time=0,displayTick=0,mode='menu',toastT=0,toastText='';
-try{engine=new BABYLON.Engine(canvas,true,{antialias:true,stencil:false,preserveDrawingBuffer:false},true);}catch(e){$('fatal').style.display='grid';$('fatal').textContent='Twoje urządzenie nie uruchomiło WebGL: '+e.message;return;}
-const isMobile=/Android|iPhone|iPad|Mobile/i.test(navigator.userAgent);
-engine.setHardwareScalingLevel(isMobile?Math.max(1.7,Math.min(2.65,window.devicePixelRatio||2)):1.5);
-scene=new BABYLON.Scene(engine);scene.clearColor=new BABYLON.Color4(.62,.80,.98,1);
-scene.fogMode=BABYLON.Scene.FOGMODE_EXP2;scene.fogDensity=.00054;scene.fogColor=new BABYLON.Color3(.72,.85,.98);
-const hemi=new BABYLON.HemisphericLight('ambient',new BABYLON.Vector3(0,1,0),scene);hemi.intensity=.96;hemi.groundColor=new BABYLON.Color3(.45,.59,.72);
-const sun=new BABYLON.DirectionalLight('sun',new BABYLON.Vector3(-.6,-1,.5),scene);sun.intensity=1.05;
-camera=new BABYLON.FreeCamera('follow',new BABYLON.Vector3(0,245,-30),scene);camera.minZ=.3;camera.maxZ=2400;camera.fov=.86;camera.inputs.clear();
-const V=(x,y,z)=>new BABYLON.Vector3(x,y,z);
-function mat(name,hex,emissive=0){let m=new BABYLON.StandardMaterial(name,scene);m.diffuseColor=BABYLON.Color3.FromHexString(hex);m.specularColor=new BABYLON.Color3(.08,.10,.15);if(emissive)m.emissiveColor=m.diffuseColor.scale(emissive);return m;}
-const snow=mat('piste','#f2f9ff'),snowRoof=mat('roof','#f9fcff'),shadow=mat('shadow','#a5cfed'),bark=mat('bark','#78503c'),pine=mat('forest','#1c6a65'),pine2=mat('forest2','#267c70'),orange=mat('safety','#ef653d'),dark=mat('dark','#253b53'),steel=mat('steel','#91a9ba'),cableMat=mat('wire','#41546c'),wood=mat('wood','#ad7346'),windowMat=mat('windows','#77c5e8',.30),blue=mat('blue','#348fda'),red=mat('red','#dc4a40'),lime=mat('ski','#dfff45'),yellow=mat('gold','#ffd85b',.40),black=mat('helmet','#182b3e'),face=mat('face','#e5b088'),pylonOrange=mat('towerPads','#ff8c43');
-function center(z){return 44*Math.sin(z/205)+21*Math.sin(z/89);}
-function widthAt(z){return 28+4*Math.sin(z/180);}
-function height(x,z){let c=center(z),d=x-c;return 247-.245*z+.00052*d*d+4.3*Math.sin(z/108)+2.4*Math.cos(z/48)+3.8*Math.sin(x/104+z/157);}
-function box(name,w,h,d,x,y,z,m,parent){let o=BABYLON.MeshBuilder.CreateBox(name,{width:w,height:h,depth:d},scene);o.position.set(x,y,z);o.material=m;if(parent)o.parent=parent;return o;}
-function cylinder(name,diamTop,diamBottom,h,x,y,z,m,tess=6,parent){let o=BABYLON.MeshBuilder.CreateCylinder(name,{diameterTop:diamTop,diameterBottom:diamBottom,height:h,tessellation:tess},scene);o.position.set(x,y,z);o.material=m;if(parent)o.parent=parent;return o;}
-// Organic terrain: stylized, deliberately not geodetic Szczyrk data.
-{
-let pos=[],col=[],uv=[],ind=[],nx=80,nz=194,minX=-345,maxX=345,maxZ=1920;
-for(let j=0;j<=nz;j++){let z=j*maxZ/nz;for(let i=0;i<=nx;i++){let x=minX+(maxX-minX)*i/nx,h=height(x,z);pos.push(x,h,z);uv.push(i/nx,j/nz);let d=Math.abs(x-center(z)),shade=(Math.sin(x*.03+z*.01)+1)*.015;let t=d>150?-.11:0;col.push(Math.min(1,.91+shade+t),Math.min(1,.956+shade+t*.48),Math.min(1,1+shade),1);}}
-for(let j=0;j<nz;j++)for(let i=0;i<nx;i++){let a=j*(nx+1)+i,b=a+nx+1;ind.push(a,b,a+1,a+1,b,b+1);}
-let mesh=new BABYLON.Mesh('snowy mountains',scene),vd=new BABYLON.VertexData();vd.positions=pos;vd.indices=ind;vd.colors=col;vd.uvs=uv;let norms=[];BABYLON.VertexData.ComputeNormals(pos,ind,norms);vd.normals=norms;vd.applyToMesh(mesh);mesh.hasVertexAlpha=false;mesh.material=snow;
-}
-// Groomed piste as a true ribbon over the terrain; finely striped pixel texture.
-{
-let tex=new BABYLON.DynamicTexture('groomer', {width:128,height:256},scene,false);let ctx=tex.getContext();ctx.fillStyle='#f8fcff';ctx.fillRect(0,0,128,256);
-for(let a=0;a<128;a+=7){ctx.fillStyle=a%2?'#dcecf7':'#e6f3fc';ctx.fillRect(a,0,2,256);ctx.fillStyle='#ffffff';ctx.fillRect(a+3,0,1,256);}for(let y=0;y<256;y+=25){ctx.fillStyle='#e4f1fa';ctx.fillRect(0,y,128,1);}tex.update(false);
-let snowTrack=new BABYLON.StandardMaterial('piste-groomed',scene);snowTrack.diffuseTexture=tex;snowTrack.specularColor=new BABYLON.Color3(.02,.03,.05);snowTrack.diffuseColor=new BABYLON.Color3(1,1,1);
-let pos=[],uv=[],ind=[],norm=[];const rings=320,nc=10;
-for(let j=0;j<=rings;j++){let z=5+j*1760/rings;for(let i=0;i<=nc;i++){let side=(i/nc*2-1),x=center(z)+side*widthAt(z),y=height(x,z)+.24;pos.push(x,y,z);uv.push(i/nc*5,j*1760/rings/11);}}
-for(let j=0;j<rings;j++)for(let i=0;i<nc;i++){let a=j*(nc+1)+i,b=a+nc+1;ind.push(a,b,a+1,a+1,b,b+1);}
-let mesh=new BABYLON.Mesh('groomed piste',scene),vd=new BABYLON.VertexData();vd.positions=pos;vd.indices=ind;vd.uvs=uv;BABYLON.VertexData.ComputeNormals(pos,ind,norm);vd.normals=norm;vd.applyToMesh(mesh);mesh.material=snowTrack;
-}
-function seeded(seed){return ()=>{seed=(Math.imul(1664525,seed)+1013904223)|0;return (seed>>>0)/4294967296;};}const random=seeded(25112026);
-// Instanced stylized fir trees: substantially fewer draw calls than individual meshes.
-const prototypes={trunk:cylinder('treeTrunk',.7,1.05,2,5000,0,0,bark),lower:cylinder('treeLower',0,5.8,8,5000,0,0,pine,5),upper:cylinder('treeUpper',0,4.1,6,5000,0,0,pine2,5),cap:cylinder('treeSnow',0,2.3,2.3,5000,0,0,snowRoof,5)};
-function tree(x,z,s=1){let y=height(x,z);let inst=prototypes.trunk.createInstance('t');inst.position.set(x,y+1*s,z);inst.scaling.setAll(s);inst=prototypes.lower.createInstance('l');inst.position.set(x,y+5.3*s,z);inst.scaling.setAll(s);inst=prototypes.upper.createInstance('u');inst.position.set(x,y+8.1*s,z);inst.scaling.setAll(s);inst=prototypes.cap.createInstance('c');inst.position.set(x,y+10.1*s,z);inst.scaling.setAll(s);}
-for(let z=20;z<1840;z+=19){for(let side of [-1,1]){for(let k=0;k<2;k++){let x=center(z)+side*(48+k*37+random()*66);if(Math.abs(x)<339)tree(x+(random()-.5)*22,z+(random()-.5)*19,.68+random()*.72);}}}
-// Lift masts and live moving gondola cabins.
-function liftX(z){return center(z)+91;}
-let mastZ=[45,255,465,685,900,1110,1330,1550,1755];
-for(let z of mastZ){let x=liftX(z),y=height(x,z);cylinder('lift pylon',2.0,3.0,28,x,y+14,z,steel,6);box('crossarm',27,1.8,2,x,y+28,z,steel);box('orange mast protection',4.3,6,4.3,x,y+3,z,pylonOrange);}
-for(let offset of [-6,6]){let pts=[];for(let z=45;z<=1760;z+=20){let x=liftX(z)+offset;pts.push(V(x,height(liftX(z),z)+29,z));}BABYLON.MeshBuilder.CreateTube('lift cable',{path:pts,radius:.18,tessellation:4},scene).material=cableMat;}
-function gondola(index){let root=new BABYLON.TransformNode('cabin'+index,scene);box('red cabin',7,5.8,5,0,-2.6,0,red,root);box('front glass',6.5,3,5.1,0,-1.8,0,windowMat,root);box('cabin undercarriage',6.6,.7,5.8,0,-5.7,0,black,root);box('cabin hanger',.55,4,.55,0,2.1,0,steel,root);cabins.push(root);return root;}
-for(let i=0;i<11;i++)gondola(i);
-// Small ski-resort buildings, terraces and piste furniture.
-function textPanel(text,x,y,z,w=12,matColor='#1b4668'){
-let t=new BABYLON.DynamicTexture('label '+text,{width:512,height:160},scene,false);let c=t.getContext();c.fillStyle=matColor;c.fillRect(0,0,512,160);c.strokeStyle='#c4efff';c.lineWidth=10;c.strokeRect(7,7,498,146);c.fillStyle='white';c.font='bold 57px monospace';c.textAlign='center';c.textBaseline='middle';c.fillText(text,256,80);t.update(false);
-let m=new BABYLON.StandardMaterial('signmaterial',scene);m.diffuseTexture=t;m.emissiveColor=new BABYLON.Color3(.28,.32,.38);m.backFaceCulling=false;let p=BABYLON.MeshBuilder.CreatePlane('sign '+text,{width:w,height:w*160/512,sideOrientation:BABYLON.Mesh.DOUBLESIDE},scene);p.position.set(x,y,z);p.material=m;return p;}
-function chalet(x,z,label){let y=height(x,z);box('wooden restaurant',21,9,15,x,y+5,z,wood);box('glass wall',17,5,.3,x,y+6,z-7.7,windowMat);let roof1=box('snow roof L',15,1.3,18,x-5,y+11.5,z,snowRoof);roof1.rotation.z=.32;let roof2=box('snow roof R',15,1.3,18,x+5,y+11.5,z,snowRoof);roof2.rotation.z=-.32;let verand=box('bar terrace',28,.8,15,x,y+.8,z-18,bark);for(let j=-2;j<=2;j++){let xx=x+j*5;box('terrace table',3,.5,2,xx,y+2.9,z-19,wood);cylinder('parasol',.25,.25,3.5,xx,y+4.8,z-19,steel);cylinder('sun umbrella',.3,4.3,1,xx,y+6.4,z-19,orange,6);}textPanel(label,x,y+9.8,z-7.9,17);}
-chalet(center(655)+97,655,'BAR NA STOKU');chalet(center(1450)+105,1450,'SOLISKO');
-function station(x,z,label){let y=height(x,z);box('lift station',25,11,24,x,y+5.5,z,dark);box('big station windows',23,7,.4,x,y+6,z-12.3,windowMat);box('snow roof',30,2,27,x,y+12,z,snowRoof);box('queue platform',29,.7,20,x,y+.6,z-16,steel);textPanel(label,x,y+10,z-13,16);}
-station(liftX(45),45,'GONDOLA');station(liftX(1720),1720,'DOLNA STACJA');
-function cannon(x,z){let y=height(x,z);box('cannon base',4,2,4,x,y+1,z,steel);let t=cylinder('snow cannon',2.7,1.7,7,x,y+5,z,pylonOrange);t.rotation.x=.78;}
-[210,485,760,1030,1300].forEach((z,i)=>cannon(center(z)+(i%2?-43:43),z));
-// Colored piste-side safety net rails.
-for(let side of [-1,1]){for(let z=300;z<=1320;z+=24){let x=center(z)+side*(widthAt(z)+3),y=height(x,z);box('net post',.65,3,.65,x,y+1.6,z,orange);if(z<1320){let x2=center(z+24)+side*(widthAt(z+24)+3),y2=height(x2,z+24);let seg=BABYLON.MeshBuilder.CreateLines('safety net',{points:[V(x,y+2.4,z),V(x2,y2+2.4,z+24),V(x2,y2+1.0,z+24),V(x,y+1,z)]},scene);seg.color=new BABYLON.Color3(1,.36,.19);}}}
-// Collectibles.
-for(let i=0;i<10;i++){let z=145+i*138,x=center(z)+(i%3-1)*9;let s=BABYLON.MeshBuilder.CreatePolyhedron('star '+i,{type:2,size:2.4},scene);s.position.set(x,height(x,z)+4,z);s.material=yellow;starObjects.push({mesh:s,z,x,picked:false});}
-// Skier character: colorful simple 3D modular geometry.
-skier=new BABYLON.TransformNode('Player',scene);
-box('jacket',3.0,3.5,1.8,0,4.7,0,red,skier);box('backpack',2.2,3,.65,0,4.5,-1.15,blue,skier);
-box('left leg',1.1,2.3,1.1,-.82,2.1,0,black,skier);box('right leg',1.1,2.3,1.1,.82,2.1,0,black,skier);
-box('left ski',.75,.33,7.1,-.85,.50,1.5,lime,skier);box('right ski',.75,.33,7.1,.85,.50,1.5,lime,skier);
-let head=BABYLON.MeshBuilder.CreateSphere('helmet',{diameter:2.2,segments:6},scene);head.parent=skier;head.position.set(0,7.35,.2);head.material=black;
-box('goggles',1.8,.66,.38,0,7.45,.95,windowMat,skier);
-for(let a of [-1,1]){let arm=box('sleeve',.8,3,.9,a*2.0,4.2,.5,red,skier);arm.rotation.z=a*.35;let pole=cylinder('pole',.12,.12,6,a*3.0,1.85,2.7,steel);pole.parent=skier;pole.rotation.x=.18;}
-// Non-player skiers for life on the slopes.
-for(let i=0;i<12;i++){let z=150+i*120,x=center(z)+(i%3-1)*12,y=height(x,z);let root=new BABYLON.TransformNode('npc '+i,scene);root.position.set(x,y+.35,z);box('npc body',1.7,2.6,1.2,0,3.2,0,i%2?blue:orange,root);let h=BABYLON.MeshBuilder.CreateSphere('npc head',{diameter:1.35,segments:5},scene);h.material=black;h.parent=root;h.position.y=5.3;box('npc ski',.6,.2,5,0,.3,1,lime,root);npc.push({root,z,x});}
-const P={x:center(20),z:20,v:12,lean:0,score:0,off:0};const controls={left:false,right:false,brake:false};
-function setMode(next){mode=next;$('overlay').style.display=next==='playing'?'none':'grid';$('pause').textContent=next==='paused'?'▶':'Ⅱ';}
-function reset(){P.x=center(25);P.z=25;P.v=10;P.lean=0;P.score=0;P.off=0;for(let s of starObjects){s.picked=false;s.mesh.setEnabled(true);}for(let k in controls)controls[k]=false;$('score').textContent='0';updateHud();camera.position.set(P.x,height(P.x,P.z)+15,P.z-23);}
-function start(){reset();setMode('playing');toast('ZJAZD! ZBIERAJ GWIAZDKI ★');}
-function finish(){setMode('finished');$('overlayTitle').textContent='META! 🏁';$('overlayDescription').innerHTML='Ukończona trasa 1 600 m!<br><strong style="font-size:27px;color:#ffda65">★ '+P.score+' / '+starObjects.length+'</strong><br>To dopiero początek rozbudowy ośrodka.';$('play').textContent='↻ JEDŹ JESZCZE RAZ';}
-function pause(){if(mode==='playing'){setMode('paused');$('overlayTitle').textContent='PAUZA';$('overlayDescription').textContent='Po przerwie ruszamy dalej. Sterowanie: strzałki albo przyciski na ekranie.';$('play').textContent='▶ WZNÓW JAZDĘ';}else if(mode==='paused'){setMode('playing');}}
-function toast(s){toastText=s;toastT=2.1;$('toast').textContent=s;$('toast').classList.add('show');}
-function updateHud(){$('speed').textContent=Math.round(P.v*3.6);$('distance').textContent=Math.min(END,Math.floor(Math.max(0,P.z-20))).toLocaleString('pl-PL');$('score').textContent=P.score;$('bar').style.width=Math.min(100,Math.max(0,P.z/END*100))+'%';}
-function update(dt){let turn=(controls.right?1:0)-(controls.left?1:0);let offDist=Math.abs(P.x-center(P.z));P.off=offDist>widthAt(P.z)+6?1:0;
-let slope=(height(P.x,P.z)-height(P.x,P.z+2))/2;let acc=6.6+slope*12-.027*P.v*P.v-(controls.brake?19:0)-(P.off?12:0);P.v=Math.max(3.2,Math.min(25,P.v+acc*dt));
-P.z+=P.v*dt;P.x+=turn*P.v*.84*dt+(center(P.z)-P.x)*.26*dt;
-P.x=Math.max(-322,Math.min(322,P.x));P.lean+=(turn-P.lean)*Math.min(1,dt*7);
-let y=height(P.x,P.z)+.37;skier.position.set(P.x,y,P.z);skier.rotation.z=-P.lean*.15;skier.rotation.y=P.lean*.20;skier.rotation.x=.06;
-for(let item of starObjects){if(!item.picked&&Math.abs(P.z-item.z)<5&&Math.abs(P.x-item.x)<5.7){item.picked=true;item.mesh.setEnabled(false);P.score++;toast('+1 GWIAZDKA! ★');}}
-if(P.off&&displayTick%70===0)toast('WRÓĆ NA TRASĘ!');
-if(P.z>=END+25){finish();return;}
-const camTarget=V(P.x+(P.lean*2),y+12,P.z-22),ease=Math.min(1,dt*5);camera.position=BABYLON.Vector3.Lerp(camera.position,camTarget,ease);camera.setTarget(V(P.x,y+5,P.z+45));
-updateHud();}
-function idleCamera(dt){let x=center(25),z=25,y=height(x,z);skier.position.set(x,y+.4,z);let aim=V(x+Math.sin(time*.23)*4,y+13,z-26);camera.position=BABYLON.Vector3.Lerp(camera.position,aim,Math.min(1,dt*1.5));camera.setTarget(V(x,y+4,z+60));}
-let phase=0;engine.runRenderLoop(()=>{let dt=Math.min(engine.getDeltaTime()/1000,.04);time+=dt;displayTick++;for(let i=0;i<cabins.length;i++){let z=45+(time*12+i*165)%1690,x=liftX(z);cabins[i].position.set(x+(i%2?6:-6),height(liftX(z),z)+24.5,z);cabins[i].rotation.y=.08*Math.sin(z/250);}for(let s of starObjects)if(!s.picked){s.mesh.rotation.y+=dt*1.3;s.mesh.position.y=height(s.x,s.z)+4+Math.sin(time*3+s.z)*.5;}
-if(mode==='playing')update(dt);else idleCamera(dt);
-if(toastT>0){toastT-=dt;if(toastT<=0)$('toast').classList.remove('show');}
-scene.render();});
-function bind(id,key){let e=$(id);const down=(ev)=>{ev.preventDefault();controls[key]=true;e.classList.add('held');try{e.setPointerCapture(ev.pointerId);}catch(e){}};const up=(ev)=>{ev.preventDefault();controls[key]=false;e.classList.remove('held');};e.addEventListener('pointerdown',down);e.addEventListener('pointerup',up);e.addEventListener('pointercancel',up);e.addEventListener('lostpointercapture',up);}
-bind('left','left');bind('right','right');bind('brake','brake');
-window.addEventListener('keydown',ev=>{if(['ArrowLeft','ArrowRight',' ','ArrowUp','ArrowDown','a','d','A','D','Escape'].includes(ev.key))ev.preventDefault();if(ev.key==='ArrowLeft'||ev.key.toLowerCase()==='a')controls.left=true;if(ev.key==='ArrowRight'||ev.key.toLowerCase()==='d')controls.right=true;if(ev.key===' '||ev.key==='ArrowDown')controls.brake=true;if(ev.key==='Escape')pause();});
-window.addEventListener('keyup',ev=>{if(ev.key==='ArrowLeft'||ev.key.toLowerCase()==='a')controls.left=false;if(ev.key==='ArrowRight'||ev.key.toLowerCase()==='d')controls.right=false;if(ev.key===' '||ev.key==='ArrowDown')controls.brake=false;});
-$('play').addEventListener('click',()=>{if(mode==='paused')setMode('playing');else start();});$('pause').addEventListener('click',pause);
-window.addEventListener('resize',()=>engine.resize());document.addEventListener('visibilitychange',()=>{if(document.hidden&&mode==='playing')pause();});
-window.addEventListener('contextmenu',e=>e.preventDefault());
-reset();idleCamera(1);
-})();
-</script>
+<canvas id="game" aria-label="Gra SMR Pixel Ski w trójwymiarowej scenerii"></canvas>
+<div id="vignette"></div>
+<header id="hud">
+ <div class="brand"><strong>⛷ SMR PIXEL SKI</strong><small>ALPHA 0.2 · WEBGL 3D</small></div>
+ <div class="hudRight">
+  <div class="panel"><em>PRĘDKOŚĆ</em><b id="speed">0 <span>km/h</span></b></div>
+  <div class="panel"><em>GWIAZDKI</em><b id="stars">★ 0</b></div>
+  <button class="smallBtn" id="pause" aria-label="Pauza">Ⅱ</button>
+ </div>
+</header>
+<div id="levelTag">📍 HALA SKRZYCZEŃSKA · TRASA TESTOWA</div>
+<div id="debug">WEBGL · 3D</div>
+<div id="worldLabels"></div>
+<div id="hint"></div>
+<div id="controls">
+ <div class="ctrlGroup"><button class="control" id="left" aria-label="W lewo">❮</button><button class="control" id="right" aria-label="W prawo">❯</button></div>
+ <div class="ctrlGroup"><button class="control" id="brake" aria-label="Hamuj"><b>▥</b>HAMUJ</button></div>
+</div>
+<div id="progress"><div id="progressLabel"><span>HALA</span><span id="meters">0 / 1400 m</span><span>META</span></div><div id="progressTrack"><div id="progressFill"></div></div></div>
+<div id="overlay">
+ <div class="startCard">
+  <span class="pill">NOWY SILNIK · 3D LOW POLY</span>
+  <h1 id="title">SMR PIXEL SKI</h1>
+  <h2>HALA SKRZYCZEŃSKA</h2>
+  <p id="description">Jedna dopracowana trasa testowa. Kamera 35° za narciarzem, pixelowy śnieg, las, kolejki i bar. Skręcaj, zbieraj gwiazdki i dojedź do mety.</p>
+  <button id="start">▶ START ZJAZDU</button>
+  <div class="note">Telefon: ❮ ❯ i HAMUJ · najlepiej poziomo<br>To stylizowany stok inspirowany SMR, nie odwzorowanie 1:1.</div>
+ </div>
+</div>
+<div id="webglError">Twoja przeglądarka nie uruchomiła WebGL. Spróbuj otworzyć grę w Chrome lub Safari i włącz akcelerację sprzętową.</div>
+<script src="./game.js?v=0.2.0"></script>
 </body>
 </html>
