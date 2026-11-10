@@ -95,7 +95,7 @@
     }
     for(let z=0;z<nz;z++)for(let x=0;x<nx;x++){
       const i=z*(nx+1)+x;
-      indices.push(i,i+nx+1,i+1,i+1,i+nx+1,i+nx+2);
+      indices.push(i,i+1,i+nx+1,i+1,i+nx+2,i+nx+1);
     }
     const norms=[];B.VertexData.ComputeNormals(pos,indices,norms);
     const mesh=new B.Mesh('terrain | 8m height-field',scene),data=new B.VertexData();
@@ -113,7 +113,7 @@
         pos.push(x,height(x,z)+.10,z);uv.push((side+1)*.5,(z-min)/8);
       }
     }
-    for(let i=0;i<(max-min)/step;i++){let j=i*2;ids.push(j,j+2,j+1,j+1,j+2,j+3);}
+    for(let i=0;i<(max-min)/step;i++){let j=i*2;ids.push(j,j+1,j+2,j+1,j+3,j+2);}
     const normals=[];B.VertexData.ComputeNormals(pos,ids,normals);
     const m=new B.Mesh('piste ribbon',scene),d=new B.VertexData();
     d.positions=pos;d.uvs=uv;d.indices=ids;d.normals=normals;d.applyToMesh(m);m.material=piste;m.receiveShadows=true;m.isPickable=false;
@@ -301,7 +301,7 @@
   // Fixed world-scale chase camera; angle ~53 degrees down to the skier's viewing area.
   function updateCamera(dt){
     const x=state.x,z=state.z,y=height(x,z);
-    const wanted=V(x+1.4,y+81,z-36),view=V(x,y+1,z+26);
+    const wanted=V(x+1.4,y+68,z-34),view=V(x,y+1,z+28);
     camera.position=B.Vector3.Lerp(camera.position,wanted,clamp(dt*3.6,0,1));
     const target=B.Vector3.Lerp(camera.getTarget(),view,clamp(dt*3.9,0,1));
     camera.setTarget(target);
