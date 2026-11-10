@@ -17,17 +17,17 @@
   scene.fogDensity=.00072;
   scene.fogColor=new B.Color3(.73,.83,.90);
   scene.imageProcessingConfiguration.contrast=1.12;
-  scene.imageProcessingConfiguration.exposure=1.04;
+  scene.imageProcessingConfiguration.exposure=.96;
   scene.skipPointerMovePicking=true;
   scene.autoClear=true;
   camera=new B.FreeCamera('alpine-camera',new B.Vector3(0,300,-45),scene);
   camera.fov=.86;camera.minZ=.5;camera.maxZ=1800;
   camera.inputs.clear();scene.activeCamera=camera;
   const sky=new B.HemisphericLight('winter skylight',new B.Vector3(-.15,1,.2),scene);
-  sky.diffuse=new B.Color3(.75,.86,1);sky.groundColor=new B.Color3(.31,.45,.62);sky.intensity=.87;
+  sky.diffuse=new B.Color3(.83,.88,.98);sky.groundColor=new B.Color3(.57,.67,.77);sky.intensity=.71;
   const sun=new B.DirectionalLight('low winter sun',new B.Vector3(-.66,-.83,.34),scene);
   sun.position=new B.Vector3(260,410,-140);
-  sun.diffuse=new B.Color3(1,.91,.79);sun.intensity=1.34;
+  sun.diffuse=new B.Color3(1,.95,.89);sun.intensity=1.03;
   let shadows;
   try { shadows=new B.ShadowGenerator(mobile?1024:1536,sun);shadows.usePercentageCloserFiltering=true;shadows.bias=.00045;shadows.normalBias=.035; }
   catch(e) { console.warn('Shadow initialization:',e.message); }
@@ -50,8 +50,8 @@
     m.diffuseColor=RGB(r,g,b);m.specularColor=RGB(spec,spec,spec);m.roughness=.88;
     return m;
   };
-  const snow=material('snow · PBR-inspired diffuse',.96,.985,1,.07);
-  const piste=material('piste · groomed snow',.98,.995,1,.04);
+  const snow=material('snow · PBR-inspired diffuse',.85,.90,.95,.07);
+  const piste=material('piste · groomed snow',.86,.91,.96,.04);
   const needles=material('spruce needles',.075,.25,.22,.08);
   const needleBlue=material('dark winter spruce',.095,.30,.29,.08);
   const wood=material('warm chalet timber',.42,.26,.19);
@@ -113,7 +113,7 @@
         pos.push(x,height(x,z)+.10,z);uv.push((side+1)*.5,(z-min)/8);
       }
     }
-    for(let i=0;i<(max-min)/step;i++){let j=i*2;ids.push(j,j+1,j+2,j+1,j+3,j+2);}
+    for(let i=0;i<(max-min)/step;i++){let j=i*2;ids.push(j,j+2,j+1,j+1,j+2,j+3);}
     const normals=[];B.VertexData.ComputeNormals(pos,ids,normals);
     const m=new B.Mesh('piste ribbon',scene),d=new B.VertexData();
     d.positions=pos;d.uvs=uv;d.indices=ids;d.normals=normals;d.applyToMesh(m);m.material=piste;m.receiveShadows=true;m.isPickable=false;
@@ -147,24 +147,16 @@
   tree.material=treeMat;tree.isPickable=false;tree.receiveShadows=false;
   const transforms=[];
   function addTree(x,z,s){const mat=B.Matrix.Compose(new B.Vector3(s,s,s),B.Quaternion.RotationAxis(B.Axis.Y,random()*Math.PI*2),V(x,height(x,z)-.6,z));mat.copyToArray(transforms,transforms.length);}
-  for(let i=0;i<650;i++){
-    const z=-120+random()*1010,side=random()<.5?-1:1;
-    const dist=pisteWidth(z)+11+Math.pow(random(),.85)*290;
+  for(let i=0;i<950;i++){
+    const z=48+random()*820,side=random()<.5?-1:1;
+    const dist=pisteWidth(z)+8+Math.pow(random(),1.75)*150;
     const x=center(z)+side*dist;
     if(Math.abs(x)>355)continue;
-    addTree(x,z,.70+random()*.85);
+    addTree(x,z,.52+random()*.65);
   }
   tree.thinInstanceSetBuffer('matrix',new Float32Array(transforms),16,true);
   tree.thinInstanceRefreshBoundingInfo();
   if(shadows)shadows.addShadowCaster(tree,false);
-  // Large irregular ridgeline creates depth at the far edge without blocking the slope.
-  const rock=material('mountain gray-blue',.48,.58,.63,.03);
-  for(let n=0;n<2;n++){
-    const side=n?1:-1;
-    const ridge=B.MeshBuilder.CreateGround('distant snow ridge '+n,{width:240,height:740,subdivisions:18,updatable:true},scene);
-    // Keep ridgelines lightweight; height-field covers the foreground.
-    ridge.position=V(side*520,170,400);ridge.rotation.y=side*.2;ridge.material=rock;
-  }
   // Chalet built from modestly detailed meshes. Full modelling comes in later stages.
   function chalet(x,z){
     const root=new B.TransformNode('ski hut group',scene);root.position=V(x,height(x,z),z);
@@ -301,7 +293,7 @@
   // Fixed world-scale chase camera; angle ~53 degrees down to the skier's viewing area.
   function updateCamera(dt){
     const x=state.x,z=state.z,y=height(x,z);
-    const wanted=V(x+1.4,y+68,z-34),view=V(x,y+1,z+28);
+    const wanted=V(x+1.4,y+54,z-32),view=V(x,y+1,z+37);
     camera.position=B.Vector3.Lerp(camera.position,wanted,clamp(dt*3.6,0,1));
     const target=B.Vector3.Lerp(camera.getTarget(),view,clamp(dt*3.9,0,1));
     camera.setTarget(target);
