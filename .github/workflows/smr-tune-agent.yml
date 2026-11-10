@@ -1,0 +1,55 @@
+name: SMR Tune Agent - quick changes
+on:
+  workflow_dispatch:
+    inputs:
+      setting:
+        description: Choose one graphics/camera setting
+        required: true
+        type: choice
+        options:
+          - cameraDistance
+          - cameraHeight
+          - cameraLead
+          - skierScale
+          - renderScale
+      value:
+        description: New numeric value within validated limits
+        required: true
+        type: string
+  issue_comment:
+    types: [created]
+permissions:
+  contents: write
+jobs:
+  tune:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'issue_comment' &&
+       startsWith(github.event.comment.body, '/tune ') &&
+       (github.event.comment.author_association == 'OWNER' ||
+        github.event.comment.author_association == 'MEMBER' ||
+        github.event.comment.author_association == 'COLLABORATOR'))
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: true
+      - name: Apply whitelisted tuning command
+        env:
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          SETTING: ${{ inputs.setting }}
+          VALUE: ${{ inputs.value }}
+          COMMENT: ${{ github.event.comment.body }}
+        run: node tools/tune.mjs
+      - name: Validate before publishing
+        run: node tools/check.mjs
+      - name: Save one small commit
+        run: |
+          git config user.name "smr-tune-agent[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add config.js
+          if ! git diff --cached --quiet; then
+            git commit -m "SMR Tune Agent: update camera/graphics settings"
+            git push origin HEAD:main
+          fi

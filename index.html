@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="pl"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover,user-scalable=no"><meta name="theme-color" content="#233752"><link rel="manifest" href="./manifest.webmanifest"><title>SMR Pixel Ski · 0.3</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover,user-scalable=no"><meta name="theme-color" content="#233752"><link rel="manifest" href="./manifest.webmanifest"><title>SMR Pixel Ski · 0.4.2</title>
 <style>
 :root{font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#fff;font-synthesis:none}*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{position:fixed;inset:0;margin:0;overflow:hidden;overscroll-behavior:none;background:#8cc4f0;touch-action:none}canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-action:none}
 #skyTint{position:fixed;inset:0;pointer-events:none;background:linear-gradient(0deg,#09213b1b 0%,transparent 17%,transparent 82%,#18446b09);z-index:1}
@@ -18,10 +18,10 @@
 @media(max-height:450px){.menu{padding:12px 19px}.menu h1{font-size:27px;margin-top:6px}.menu h2{margin:4px 0 6px}.menu p{font-size:11px;margin:8px auto}.foot{margin-top:9px}.control{height:59px}#track{bottom:20px}}
 </style></head><body>
 <canvas id="game"></canvas><div id="skyTint"></div>
-<div id="hud"><div class="brand"><b>⛷ SMR PIXEL SKI</b><small>RETRO ALPINE · 0.3</small></div><div class="right"><div class="tile"><label>PRĘDKOŚĆ</label><strong id="speed">0 <small>km/h</small></strong></div><div class="tile points"><label>GWIAZDKI</label><strong id="score">★ 0</strong></div><button class="iconBtn" id="pause" aria-label="Pauza">Ⅱ</button></div></div>
+<div id="hud"><div class="brand"><b>⛷ SMR PIXEL SKI</b><small>WINTER RESORT · 0.4.2</small></div><div class="right"><div class="tile"><label>PRĘDKOŚĆ</label><strong id="speed">0 <small>km/h</small></strong></div><div class="tile points"><label>GWIAZDKI</label><strong id="score">★ 0</strong></div><button class="iconBtn" id="pause" aria-label="Pauza">Ⅱ</button></div></div>
 <div id="sector">📍 HALA SKRZYCZEŃSKA · TRASA TESTOWA</div><div id="labels"></div>
 <div id="controls"><div class="pad"><button class="control" id="left" aria-label="Skręć w lewo">❮</button><button class="control" id="right" aria-label="Skręć w prawo">❯</button></div><button class="control brake" id="brake" aria-label="Hamuj"><span>▥</span>HAMUJ</button></div>
 <div id="track"><div class="trackLabel"><span>HALA</span><span id="metres">0 / 1400 m</span><span>META</span></div><div id="bar"><div id="fill"></div></div></div>
 <div id="notification"></div>
-<div id="overlay"><div class="menu"><span class="tag">PIXEL 3D · NOWA GRAFIKA</span><h1 id="title">SMR PIXEL SKI</h1><h2>HALA SKRZYCZEŃSKA</h2><p id="description">Stok 3D, duży narciarz, kręte trasy, działające gondole, restauracja z tarasem i śnieżny las. Nowy styl inspirowany wariantem C.</p><button id="start">▶ START ZJAZDU</button><div class="foot">Sterowanie: ❮ ❯ i HAMUJ · ekran najlepiej poziomo<br>Stylizowany ośrodek inspirowany Szczyrkiem, nie mapa 1:1</div></div></div><div id="err"></div><script src="./game.js?v=0.3.0"></script>
+<div id="overlay"><div class="menu"><span class="tag">PIXEL 3D · NOWA GRAFIKA</span><h1 id="title">SMR PIXEL SKI</h1><h2>HALA SKRZYCZEŃSKA</h2><p id="description">Stok 3D, duży narciarz, kręte trasy, działające gondole, restauracja z tarasem i śnieżny las. Nowy styl inspirowany wariantem C.</p><button id="start">▶ START ZJAZDU</button><div class="foot">Sterowanie: ❮ ❯ i HAMUJ · ekran najlepiej poziomo<br>Stylizowany ośrodek inspirowany Szczyrkiem, nie mapa 1:1</div></div></div><div id="err"></div><script src="./config.js?v=0.4.2.0"></script><script src="./game.js?v=0.4.2.0"></script>
 </body></html>
