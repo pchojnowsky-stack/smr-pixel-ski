@@ -1,0 +1,42 @@
+<!doctype html><html lang="pl"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover,user-scalable=no"/><meta name="theme-color" content="#8b9eaf"/><title>SMR Pixel Ski 1.2 — SnowEngine WebGL2</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;touch-action:none;background:#8e9eb1;font-family:system-ui,Arial,sans-serif;color:white}canvas{position:absolute;width:100%;height:100%;inset:0;display:block}
+#hud{position:absolute;inset:0;pointer-events:none;text-shadow:0 2px 5px #193648}button{font:inherit;font-weight:800;cursor:pointer;touch-action:none}
+#top{position:absolute;left:15px;right:15px;top:max(12px,env(safe-area-inset-top));display:flex;justify-content:space-between;align-items:start}
+#brand{font-size:13px;font-weight:900;letter-spacing:1px;opacity:.79}#brand small{display:block;font-size:9px}
+#target{position:absolute;left:50%;transform:translateX(-50%);text-align:center;font-size:12px;letter-spacing:1px}
+#target strong{font-size:26px;font-style:italic;display:block;letter-spacing:.7px;font-weight:750}
+#time{text-align:center;font-size:11px;letter-spacing:1px}#clock{display:block;font-size:29px;font-weight:800;letter-spacing:2px}
+#speed{font-size:11px;display:block;letter-spacing:0}
+#pause{pointer-events:auto;position:absolute;right:6px;top:75px;width:43px;height:42px;background:#0f314e99;color:white;border:1px solid #ffffff88;border-radius:10px}
+#location{position:absolute;left:15px;top:79px;max-width:280px;font-size:11px;padding:8px 10px;background:#1a3a509c;border-radius:10px}
+#location small{display:block;opacity:.75;font-size:9px}#distance{font-size:11px}
+#fps{position:absolute;right:14px;top:132px;font:11px monospace}
+#cam-tools{position:absolute;right:14px;top:173px;pointer-events:auto;display:flex;gap:5px}
+#cam-tools button{background:#294965ab;color:white;border:1px solid #f2fbff7a;padding:9px;border-radius:9px;font-size:11px}
+#controls{position:absolute;left:17px;right:17px;bottom:max(17px,env(safe-area-inset-bottom));display:flex;justify-content:space-between;pointer-events:none}
+.group{display:flex;gap:7px;pointer-events:auto}
+.control{width:68px;height:73px;border:2px solid #d5edfb91;border-radius:18px;background:#244660a4;color:white;font-size:12px;font-weight:850;touch-action:none}
+.arrow{font-size:30px}.control:active,.control.pressed{background:#c8803bb9;transform:translateY(2px)}
+#overlay{position:absolute;inset:0;z-index:5;background:#102a3b72;display:grid;place-items:center;padding:15px}
+#overlay[hidden],#error[hidden]{display:none}
+#card{text-align:center;max-width:430px;background:#173246eb;border-radius:18px;padding:27px;box-shadow:0 20px 50px #1a2f48a0;border:1px solid #ffffff5c}
+#card .eyebrow{letter-spacing:2px;font-size:10px;color:#c5dce9}
+h1{margin:8px 0;font-size:33px}p{color:#e2eef4;line-height:1.6;font-size:13px}
+#start{padding:14px 26px;width:100%;background:#f5c77f;border:0;border-radius:12px;color:#1e3546;font-weight:900}
+#card small{font-size:10px;display:block;margin-top:12px;color:#adc8d9}
+#error{position:absolute;inset:0;z-index:20;display:grid;place-items:center;padding:20px;text-align:center;background:#17354a}
+body.playing #location{opacity:.55}
+@media(max-width:650px){#top{left:7px;right:7px}#brand{font-size:10px}#target strong{font-size:16px}#clock{font-size:18px}#location{top:81px;left:7px;max-width:160px;font-size:9px}#fps{top:125px}#cam-tools{top:160px}.control{width:56px;height:62px;font-size:10px}.arrow{font-size:23px}.group{gap:4px}#controls{left:6px;right:6px}h1{font-size:25px}}
+@media(max-height:480px){#location{top:63px}#cam-tools{top:72px;right:55px}#fps{top:126px}#card{padding:14px}h1{font-size:23px}p{margin:8px}}
+</style></head><body>
+<canvas id="scene" aria-label="SnowEngine WebGL2 Szczyrk Szumarjanka swobodna jazda 3D"></canvas>
+<div id="hud"><div id="top"><div id="brand">SMR PIXEL SKI<small>SNOW ENGINE · 1.2</small></div><div id="target">TARGET<strong>Ski to goal</strong></div><div id="time">TIME<span id="clock">0:00</span><small id="speed">0 km/h</small></div></div>
+<button id="pause" aria-label="Pauza">Ⅱ</button><div id="location"><b>SZUMARJANKA 4</b><small>OpenSkiMap 3D · własny renderer WebGL2</small><span id="distance">TRASA</span></div>
+<div id="fps"></div><div id="cam-tools"><button id="camera">KAMERA: LOT</button><button id="zoomIn">＋</button><button id="zoomOut">－</button></div>
+<div id="controls"><div class="group"><button class="control arrow" id="left" aria-label="Lewo">❮</button><button class="control arrow" id="right" aria-label="Prawo">❯</button></div>
+<div class="group"><button class="control" id="brake">HAMUJ</button><button class="control" id="tuck">ZJAZD</button><button class="control" id="jump">SKOK</button></div></div></div>
+<div id="overlay"><div id="card"><span class="eyebrow">ETAP 1.2 · SILNIK GRAFICZNY OD NOWA</span><h1 id="heading">SNOW ENGINE</h1>
+<p>Oryginalny silnik WebGL2: wysoka kamera, śnieżny teren 3D, modele świerków, oświetlenie i dynamiczne cienie, wyciąg, narciarze i ślady. Swobodna jazda bez przywiązania do linii trasy.</p>
+<button id="start">▶ ROZPOCZNIJ ZJAZD</button><small>Model stoku nadal wymaga NMT GUGiK 1m i rzeczywistych granic. Dane: OpenSkiMap i © OpenStreetMap contributors.</small></div></div><div id="error" hidden></div>
+<script src="./engine.js?v=1.2.0"></script><script src="./geometry.js?v=1.2.0"></script><script src="./freeride.js?v=1.2.0"></script><script src="./game.js?v=1.2.0"></script></body></html>
