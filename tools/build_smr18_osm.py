@@ -85,34 +85,48 @@ def sector_bbox(scene,pad=35):
 
 def request(scene,sector):
  bbox=",".join(f"{n:.7f}" for n in sector_bbox(scene))
- q=f"""[out:json][timeout:180];
+ # First attempt preserves OSM multipolygons. If its server is at capacity,
+ # fall back to mapped closed forest/building *ways*, never invented objects.
+ full=f"""[out:json][timeout:80];
  (
  way["natural"="wood"]({bbox});
  way["landuse"="forest"]({bbox});
  relation["natural"="wood"]({bbox});
  relation["landuse"="forest"]({bbox});
  way["building"]({bbox});
- relation["building"]({bbox});
  );
  out geom;"""
+ ways=f"""[out:json][timeout:55];
+ (
+ way["natural"="wood"]({bbox});
+ way["landuse"="forest"]({bbox});
+ way["building"]({bbox});
+ );
+ out geom;"""
+ attempts=[
+  (OVERPASS[0],full,85,"all polygons"),
+  (OVERPASS[0],ways,65,"ways-only"),
+  (OVERPASS[1],ways,65,"alternate"),
+  ("https://overpass-api.de/api/interpreter",ways,65,"last-resort"),
+ ]
  errors=[]
- for endpoint in OVERPASS:
-  for attempt in range(1):
-   try:
-    data=urllib.parse.urlencode({"data":q}).encode()
-    req=urllib.request.Request(endpoint,data=data,headers={
-      "User-Agent":"SMR-Pixel-Ski-OSM-GeoVerifier/1.8 (OpenStreetMap attribution)",
-      "Content-Type":"application/x-www-form-urlencoded"})
-    with urllib.request.urlopen(req,timeout=110) as response:
-      payload=response.read(25_000_000)
-    output=json.loads(payload)
-    if "elements" not in output:raise RuntimeError("No elements in OSM response")
-    print(sector,"downloaded",len(output["elements"]),"OSM features from",endpoint,flush=True)
-    return output["elements"],endpoint
-   except Exception as e:
-    errors.append(str(e)[:180])
-    print(sector,"OSM request failure",endpoint,attempt+1,str(e)[:180],flush=True)
-    time.sleep(3+attempt*7)
+ for endpoint,q,timeout,mode in attempts:
+  try:
+   data=urllib.parse.urlencode({"data":q}).encode()
+   req=urllib.request.Request(endpoint,data=data,headers={
+     "User-Agent":"SMR-Pixel-Ski-OSM-GeoVerifier/1.8 (OpenStreetMap attribution)",
+     "Content-Type":"application/x-www-form-urlencoded"})
+   with urllib.request.urlopen(req,timeout=timeout) as response:
+    payload=response.read(25_000_000)
+   output=json.loads(payload)
+   if "elements" not in output:raise RuntimeError("No elements in OSM response")
+   if len(output["elements"])<10:raise RuntimeError("Too few OSM features")
+   print(sector,"downloaded",len(output["elements"]),"OSM features",mode,"from",endpoint,flush=True)
+   return output["elements"],endpoint+" ("+mode+")"
+  except Exception as e:
+   errors.append(mode+": "+str(e)[:150])
+   print(sector,"OSM request failure",endpoint,mode,str(e)[:150],flush=True)
+   time.sleep(2)
  raise RuntimeError("Cannot get verified OSM data for "+sector+": "+" | ".join(errors))
 
 def segments(scene):
