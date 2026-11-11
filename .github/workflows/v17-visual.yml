@@ -1,0 +1,59 @@
+name: SMR 1.7 Real GUGiK Terrain & Photo-Referenced Buildings QA
+on:
+  push:
+    branches: [stage-17-gugik-lidar-landmarks, main]
+    paths:
+      - 'v17/**'
+      - '.github/workflows/v17-visual.yml'
+  pull_request:
+    paths:
+      - 'v17/**'
+      - '.github/workflows/v17-visual.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  stage17:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Script integrity and terrain source guard
+        run: |
+          node --check v17/engine.js
+          node --check v17/geometry.js
+          node --check v17/landmarks.js
+          node --check v17/terrain-data.js
+          node --check v17/game.js
+          node --check v17/piste.js
+          node --check v17/freeride.js
+          node --check v17/vehicles.js
+          node v17/physics.test.cjs
+          node v17/terrain.test.cjs
+      - name: Validate verified GUGiK tiles
+        run: |
+          python - <<'PY'
+          import pathlib,json,base64
+          root=pathlib.Path("v17/data")
+          manifest=json.loads((root/"manifest.json").read_text())
+          assert sorted(manifest["sectors"])==["golgota","hala","skrzyczne"],"Actual NMT is missing from one or more sectors"
+          for name in manifest["sectors"]:
+              d=json.loads((root/(name+".json")).read_text())
+              t=d["terrain"];a=d["source"];n=t["cols"]*t["rows"]
+              assert n>45000 and len(base64.b64decode(t["heights16"]))==2*n
+              assert a["agency"]=="GUGiK" and a["coverage_percent"]>=98.5
+              assert a["downloaded_from"]=="real WCS GetCoverage GeoTIFF"
+              print(name,n,"real NMT vertices; source WCS sampling:",a["wcs_request_sampling_m"])
+          PY
+      - name: Install Chromium WebGL2 test
+        run: |
+          npm install --no-save playwright
+          npx playwright install chromium --with-deps
+      - name: Render 3 sectors and check 2-pole skiing
+        run: node v17/visual-qa.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smr17-nmt-lidar-derived-3-sector-webgl2-screens
+          path: v17/qa/
+          retention-days: 14
