@@ -131,34 +131,35 @@ function createSkier(B,scene,shadowGenerator) {
       for(const leg of legPivots)leg.rotation.set(0,0,0);
       particles.emitRate=0;lastLean=0;
     },
-    animate({turn=0,speed=0,time=0,braking=false,active=false,dt=.016,px=0,py=0,pz=0}={}){
+    animate({turn=0,speed=0,time=0,braking=false,tuck=0,airborne=false,impact=0,active=false,dt=.016,px=0,py=0,pz=0}={}){
       const damping=Math.min(1,Math.max(0,dt)*7);
       lastLean+=(turn-lastLean)*damping;
       const carve=lastLean;
       // A skier leans into edge and keeps shoulders stable while knees bend.
-      upper.rotation.z=-carve*.27;
-      upper.rotation.x=.21+(braking?-.15:0);
+      upper.rotation.z=-carve*(.33+tuck*.23);
+      upper.rotation.x=.21+tuck*.53+(airborne?-.12:0)+(braking?-.15:0);
       upper.rotation.y=-carve*.10;
       hips.rotation.z=-carve*.14;
-      hips.position.y=1.20-(braking?.10:0)+Math.sin(time*4)*.014;
-      legPivots[0].rotation.x=.10+Math.max(0,-carve)*.20+(braking?.18:0);
-      legPivots[1].rotation.x=.10+Math.max(0,carve)*.20+(braking?.18:0);
+      hips.position.y=1.20-tuck*.30-impact*.13-(braking?.10:0)+Math.sin(time*4)*.014;
+      legPivots[0].rotation.x=.10+Math.max(0,-carve)*.22+tuck*.23+(airborne?-.20:0)+(braking?.18:0);
+      legPivots[1].rotation.x=.10+Math.max(0,carve)*.22+tuck*.23+(airborne?-.20:0)+(braking?.18:0);
       legPivots[0].rotation.z=carve*.10;
       legPivots[1].rotation.z=carve*.10;
-      armPivots[0].rotation.z=-.14+carve*.20;
-      armPivots[1].rotation.z=.14+carve*.20;
-      armPivots[0].rotation.x=Math.sin(time*3)*.035+(braking?-.28:0);
-      armPivots[1].rotation.x=-Math.sin(time*3)*.035+(braking?-.28:0);
+      armPivots[0].rotation.z=-.14+carve*.24+tuck*.20;
+      armPivots[1].rotation.z=.14+carve*.24-tuck*.20;
+      armPivots[0].rotation.x=Math.sin(time*3)*.035-tuck*.47+(airborne?.25:0)+(braking?-.28:0);
+      armPivots[1].rotation.x=-Math.sin(time*3)*.035-tuck*.47+(airborne?.25:0)+(braking?-.28:0);
       figure.rotation.y=-carve*.09;
-      figure.rotation.x=braking?-.12:0;
+      figure.rotation.x=(braking?-.12:0)+(airborne?-.14:0)+impact*.08;
       for(const ski of skiBlades){
         ski.rotation.y=-carve*.10;
-        ski.rotation.z=-carve*.07;
+        ski.rotation.z=-carve*.13;
+        ski.rotation.x=airborne?-.16:impact*.08;
       }
       // Continuous but short-lived powder, only when edging or stopping.
       particles.emitter.copyFromFloats(px,py+.33,pz-.50);
       const strength=(Math.min(Math.abs(carve),1)*.65+(braking?.65:0));
-      particles.emitRate=active ? Math.min(50,Math.floor(strength*32+Math.max(0,speed-13)*.55)) : 0;
+      particles.emitRate=active&&!airborne ? Math.min(50,Math.floor(strength*32+Math.max(0,speed-13)*.55)) : 0;
     }
   };
   return api;
