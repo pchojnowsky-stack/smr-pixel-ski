@@ -20,7 +20,8 @@ const server=http.createServer((req,res)=>{
    const page=await context.newPage(),errors=[];
    page.on("pageerror",e=>errors.push(e.message));page.on("console",m=>{if(m.type()==="error")errors.push(m.text());});
    await page.goto("http://127.0.0.1:4156/v16/?zone="+zone+"&run="+run,{waitUntil:"domcontentloaded",timeout:60000});
-   await page.waitForFunction(()=>window.__SMR_DEBUG__?.get().frame>2,{timeout:65000});
+   try{await page.waitForFunction(()=>window.__SMR_DEBUG__?.get().frame>2,{timeout:60000});}
+    catch(e){const diag=await page.evaluate(()=>({error:document.querySelector("#error")?.textContent,errorHidden:document.querySelector("#error")?.hidden,ready:document.readyState,debug:!!window.__SMR_DEBUG__,scripts:[...document.scripts].map(x=>x.src),html:document.querySelector("#overlay")?.hidden}));throw Error(name+" startup failed: "+JSON.stringify(diag)+" JS: "+errors.join(" | ")+" :: "+e.message);}
    const initial=await page.evaluate(()=>window.__SMR_DEBUG__.get());
    if(initial.version!=="1.6.0"||!initial.webgl2||initial.pistePosts<20||initial.extraTrees<10||!initial.liftTypes?.length||initial.buildingDetails<1)throw Error("Bad piste scene: "+JSON.stringify(initial));
    if(!await page.locator("#incline").count())throw Error("Slope HUD missing");
