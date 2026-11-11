@@ -1,0 +1,58 @@
+name: SMR 1.8 Verified OSM Geolocation QA
+on:
+  push:
+    branches: [stage-18-osm-forest-buildings, main]
+    paths:
+      - 'v18/**'
+      - '.github/workflows/v18-visual.yml'
+  pull_request:
+    paths:
+      - 'v18/**'
+      - '.github/workflows/v18-visual.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  stage18:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check game code and preserved physics
+        run: |
+          node --check v18/game.js
+          node --check v18/geometry.js
+          node --check v18/piste.js
+          node --check v18/landmarks.js
+          node --check v18/engine.js
+          node --check v18/terrain-data.js
+          node v18/terrain.test.cjs
+          node v18/physics.test.cjs
+      - name: Verify all three real woodland/building overlays are present
+        run: |
+          python - <<'PY'
+          import json,pathlib
+          p=pathlib.Path("v18/data")
+          m=json.loads((p/"osm-manifest.json").read_text())
+          assert m["format"]=="smr18-osm-geolocated-manifest"
+          assert sorted(m["sectors"])==["golgota","hala","skrzyczne"]
+          for zone in m["sectors"]:
+            d=json.loads((p/(zone+".json")).read_text())
+            assert d["format"]=="smr18-osm-geolocated-landcover"
+            assert len(d["trees"])>=40 and len(d["buildings"])>=5
+            assert not d["source"]["forest_procedural_fallback"]
+            assert d["source"]["woodland_after_exclusion_m2"]>1200
+            print(zone,"OSM-only trees",len(d["trees"]),"OSM buildings",len(d["buildings"]))
+          PY
+      - name: Install Chromium with WebGL2
+        run: |
+          npm install --no-save playwright
+          npx playwright install chromium --with-deps
+      - name: Actual WebGL2 scenes and two-pole touch control
+        run: node v18/visual-qa.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smr18-mapped-osm-forest-buildings-screen-captures
+          path: v18/qa/
+          retention-days: 14
