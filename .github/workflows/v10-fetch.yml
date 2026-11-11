@@ -1,0 +1,29 @@
+name: SMR Stage 1.0 OpenSkiMap fetch and inspect
+on:
+  push:
+    branches: [stage-10-openskimap-rebuild]
+    paths: ['tools/fetch_openskimap.py','.github/workflows/v10-fetch.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: stage-10-openskimap-rebuild
+      - run: python tools/fetch_openskimap.py
+      - name: Commit inspectable bounded extract
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add v10/data/openskimap-features.geojson v10/data/openskimap-source-report.json
+          git diff --cached --quiet || (git commit -m "Capture official OpenSkiMap Szczyrk geo extract" && git push)
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v10-openskimap-extract
+          path: v10/data/
+          retention-days: 14

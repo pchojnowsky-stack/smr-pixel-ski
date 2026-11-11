@@ -1,0 +1,27 @@
+name: SMR 1.0 OpenSkiMap full rebuild visual QA
+on:
+  push:
+    branches: [stage-10-openskimap-rebuild,main]
+    paths: ['v10/**','.github/workflows/v10-visual.yml']
+  pull_request:
+    paths: ['v10/**']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+      - run: node --check v10/game.js && node --check v10/skier.js && node --check v10/forest.js && node --check v10/visual-qa.cjs
+      - run: |
+          npm install --no-save playwright
+          npx playwright install chromium --with-deps
+      - run: node v10/visual-qa.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smr-openskimap-1.0-screens
+          path: v10/qa/
+          retention-days: 14
