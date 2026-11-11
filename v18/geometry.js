@@ -208,29 +208,9 @@ function resortObjects(geo,height){
   b.box(p[0]+5,y+2.9,p[1],5.5,1.28,.24,col);
   b.box(q[0]+4,fy,q[1],.3,3.1,.3,[.28,.34,.39]);
  }
- for(const lift of geo.lifts||[]){
-  if(geo.id==="hala"&&(lift.ref==="A1"||lift.ref==="B1"))continue; // bespoke lift terminals
-  const gondola=lift.ref==="A1",drag=lift.ref.startsWith("C");
-  for(let k=0;k<2;k++){
-   const p=k===0?lift.coordinates[0]:lift.coordinates[lift.coordinates.length-1],
-    x=p[0],z=p[1],y=height(x,z),w=gondola?23:drag?8:16,d=gondola?24:drag?9:18,
-    h=gondola?8:drag?3.5:6,steel=[.27,.34,.39],roof=[.17,.24,.29];
-   // Recognisable station enclosure: concrete foundation, glass bands, roof machinery.
-   b.box(x,y,z,w,1.05,d,[.43,.47,.48]);
-   b.box(x,y+1.05,z,w*.87,h-1.05,d*.82,[.31,.38,.42]);
-   b.box(x,y+h,z,w+2,.9,d+2,roof);
-   b.box(x,y+2.2,z-d*.42,w*.60,2.35,.19,[.24,.47,.55]);
-   b.box(x,y+h+.8,z,w*.25,1.1,d*.40,steel);
-   for(const side of [-1,1]){
-    b.box(x+side*(w*.50),y+1.2,z,.45,h-.6,.45,steel);
-    if(!drag)b.box(x+side*w*.34,y+h+.55,z,2,.3,d*.55,[.45,.50,.52]);
-   }
-   if(gondola){
-    for(let i=-2;i<=2;i++)b.box(x+i*3.5,y+1.15,z-d*.45,.14,3,.14,[.17,.23,.27]);
-    b.box(x,y+.5,z+d*.55,w*.77,.35,7,[.38,.35,.31]);
-   }
-  }
- }
+ // Do not invent large station buildings around lift endpoints. Existing OSM
+ // building polygons provide the visible built environment; the machinery/cables
+ // are represented by the verified lift axes in lift()/vehicles.js.
  return b.done();
 }
 window.SnowGeometry={builder,terrain,spruce,buildings,lift,skier,resortObjects};
