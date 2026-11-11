@@ -27,16 +27,14 @@ function apply(geo,patch){
  for(let i=0;i<heights.length;i++)heights[i]=data.getInt16(i*2,true)*scale;
  const old=geo.terrain;
  const next={x0:t.x0,z0:t.z0,step_x:t.step_x,step_z:t.step_z,cols,rows,heights,
-  groom:new Uint8Array(cols*rows)};
+  groom:new Float32Array(cols*rows)};
  const oldGroom=old.groom||[];
  for(let j=0;j<rows;j++)for(let i=0;i<cols;i++){
   const x=t.x0+i*t.step_x,z=t.z0+j*t.step_z;
   const gx=clamp(Math.round((x-old.x0)/old.step_x),0,old.cols-1),
         gz=clamp(Math.round((z-old.z0)/old.step_z),0,old.rows-1);
-  next.groom[j*cols+i]=Math.round(255*clamp(oldGroom[gz*old.cols+gx]??.4,0,1));
+  next.groom[j*cols+i]=clamp(oldGroom[gz*old.cols+gx]??.4,0,1);
  }
- // Geometry shader expects grooming intensity 0..1; compact byte storage requires conversion.
- for(let i=0;i<next.groom.length;i++)next.groom[i]/=255;
  // Keep game-relative elevations; rescue pre-mapped lift/cable altitudes from new ground.
  for(const run of geo.runs)for(const p of run.coordinates)p[2]=sample(next,p[0],p[1]);
  for(const lift of geo.lifts)for(const p of lift.coordinates)p[2]=sample(next,p[0],p[1]);
