@@ -1,0 +1,27 @@
+name: SMR 1.1 Aerial Freeride WebGL and Physics QA
+on:
+  push:
+    branches: [stage-11-aerial-freeride, main]
+    paths: ['v11/**','.github/workflows/v11-visual.yml']
+  pull_request:
+    paths: ['v11/**','.github/workflows/v11-visual.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 17
+    steps:
+      - uses: actions/checkout@v4
+      - run: node --check v11/game.js && node --check v11/freeride.js && node --check v11/skier.js && node --check v11/forest.js && node --check v11/visual-qa.cjs && node v11/freeride.test.cjs
+      - run: |
+          npm install --no-save playwright
+          npx playwright install chromium --with-deps
+      - run: node v11/visual-qa.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smr-v11-aerial-freeride-screens
+          path: v11/qa/
+          retention-days: 14
