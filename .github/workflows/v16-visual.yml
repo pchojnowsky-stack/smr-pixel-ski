@@ -1,0 +1,41 @@
+name: SMR 1.6 Terrain and Resort Photoreference QA
+on:
+  push:
+    branches: [stage-16-terrain-architecture-lifts, main]
+    paths:
+      - 'v16/**'
+      - '.github/workflows/v16-visual.yml'
+  pull_request:
+    paths:
+      - 'v16/**'
+      - '.github/workflows/v16-visual.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  stage16:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntax and movement regression
+        run: |
+          node --check v16/game.js
+          node --check v16/geometry.js
+          node --check v16/vehicles.js
+          node --check v16/engine.js
+          node --check v16/piste.js
+          node --check v16/freeride.js
+          node v16/physics.test.cjs
+      - name: Install real WebGL2 browser
+        run: |
+          npm install --no-save playwright
+          npx playwright install chromium --with-deps
+      - name: Real render and touch screenshots
+        run: node v16/visual-qa.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smr16-terrain-resort-browser-screens
+          path: v16/qa/
+          retention-days: 14
