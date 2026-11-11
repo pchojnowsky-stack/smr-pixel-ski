@@ -15,7 +15,7 @@ const server=http.createServer((req,res)=>{
  const browser=await chromium.launch({headless:true,args:["--use-gl=angle","--use-angle=swiftshader","--enable-webgl","--no-sandbox"]});
  try{
   fs.mkdirSync(out,{recursive:true});
-  for(const [name,width,height,zone,run] of [["landscape",1280,720,"hala","4"],["portrait",390,844,"golgota","10"]]){
+  for(const [name,width,height,zone,run] of [["landscape",1280,720,"hala","4"],["portrait",390,844,"golgota","10"],["skrzyczne",1280,720,"skrzyczne","21"]]){
    const context=await browser.newContext({viewport:{width,height},hasTouch:true,isMobile:true,deviceScaleFactor:1});
    const page=await context.newPage(),errors=[];
    page.on("pageerror",e=>errors.push(e.message));page.on("console",m=>{if(m.type()==="error")errors.push(m.text());});
@@ -23,6 +23,7 @@ const server=http.createServer((req,res)=>{
    try{await page.waitForFunction(()=>window.__SMR_DEBUG__?.get().frame>2,{timeout:60000});}
     catch(e){const diag=await page.evaluate(()=>({error:document.querySelector("#error")?.textContent,errorHidden:document.querySelector("#error")?.hidden,ready:document.readyState,debug:!!window.__SMR_DEBUG__,scripts:[...document.scripts].map(x=>x.src),html:document.querySelector("#overlay")?.hidden}));throw Error(name+" startup failed: "+JSON.stringify(diag)+" JS: "+errors.join(" | ")+" :: "+e.message);}
    const initial=await page.evaluate(()=>window.__SMR_DEBUG__.get());
+   if(zone==="skrzyczne"&&!initial.liftTypes.some(l=>l.ref==="C10"&&l.type==="drag"))throw Error("C10 orczyk not modeled");
    if(initial.version!=="1.6.0"||!initial.webgl2||initial.pistePosts<20||initial.extraTrees<10||!initial.liftTypes?.length||initial.buildingDetails<1)throw Error("Bad piste scene: "+JSON.stringify(initial));
    if(!await page.locator("#incline").count())throw Error("Slope HUD missing");
    if(await page.locator("#controls button").count()!==2)throw Error("Expected two pole controls");
