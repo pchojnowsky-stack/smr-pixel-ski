@@ -1,0 +1,32 @@
+name: SMR 0.8 Resort Visual QA
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'v08/**'
+      - '.github/workflows/v08-visual.yml'
+  pull_request:
+    paths:
+      - 'v08/**'
+      - '.github/workflows/v08-visual.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  screenshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - run: node --check v08/game.js && node --check v08/skier.js && node --check v08/resort.js && node --check v08/visual-qa.cjs
+      - run: |
+          npm install --no-save playwright
+          npx playwright install chromium --with-deps
+      - name: Browser smoke and actual WebGL screenshots
+        run: node v08/visual-qa.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smr-stage4-resort-screens
+          path: v08/qa/
+          retention-days: 14
