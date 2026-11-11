@@ -44,6 +44,10 @@ jobs:
             assert d["source"]["woodland_after_exclusion_m2"]>1200
             print(zone,"OSM-only trees",len(d["trees"]),"OSM buildings",len(d["buildings"]))
           PY
+      - name: Spatial geometry regression on actual OSM objects
+        run: |
+          python -m pip install --disable-pip-version-check shapely
+          python tools/test_smr18_osm.py
       - name: Install Chromium with WebGL2
         run: |
           npm install --no-save playwright
