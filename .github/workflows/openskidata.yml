@@ -1,0 +1,22 @@
+name: SMR OpenSkiData comparison tests
+on:
+  pull_request:
+    paths:
+      - 'tools/compare_openskidata.py'
+      - 'tools/test_compare_openskidata.py'
+      - '.github/workflows/openskidata.yml'
+  push:
+    branches: [stage-092-terrain-builder-and-forest]
+    paths:
+      - 'tools/compare_openskidata.py'
+      - 'tools/test_compare_openskidata.py'
+      - '.github/workflows/openskidata.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python -m unittest discover -s tools -p 'test_compare_openskidata.py' -v
