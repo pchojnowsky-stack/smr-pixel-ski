@@ -44,6 +44,22 @@ for sector in ("hala","golgota","skrzyczne"):
   key=(x,z)
   assert key not in positions,(sector,"duplicate tree",x,z)
   positions.add(key)
+ # Coordinate-system regression: the same OSM way IDs from the older sector
+ # must remain in roughly the same place. This catches lon/lat swaps, east/west
+ # inversions, or accidental changes to the local geo projection.
+ old_centres={}
+ for old in scene["buildings"]:
+  if len(old["p"])>=3:
+   old_centres[old["id"]]=Polygon(old["p"]).centroid
+ displacements=[]
+ for mapped in data["buildings"]:
+  old=old_centres.get(mapped["id"])
+  if old is not None:
+   displacements.append(old.distance(Polygon(mapped["p"]).centroid))
+ assert len(displacements)>=3,(sector,"too few shared footprint IDs to verify coordinate transform")
+ displacements.sort()
+ assert displacements[len(displacements)//2]<3.0,(sector,"OSM building projection differs from older map",displacements[len(displacements)//2])
+ assert displacements[int((len(displacements)-1)*.90)]<10.0,(sector,"OSM footprint placement changed too far",displacements[-5:])
  assert len(data["trees"])>=40
  print("SPATIAL PASS",sector,len(data["trees"]),"OSM woodland trees",len(buildings),"OSM buildings",
-       "no piste/building/lift collisions",flush=True)
+       "no piste/building/lift collisions",len(displacements),"matched OSM ids",flush=True)
