@@ -1,0 +1,55 @@
+name: Fetch verified GUGiK NMT for SnowEngine 1.7
+on:
+  workflow_dispatch:
+  push:
+    branches: [stage-17-gugik-lidar-landmarks]
+    paths:
+      - 'tools/build_smr17_nmt.py'
+      - '.github/workflows/v17-nmt.yml'
+permissions:
+  contents: write
+jobs:
+  gugik:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    concurrency:
+      group: smr17-gugik-acquisition
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: stage-17-gugik-lidar-landmarks
+          persist-credentials: true
+      - name: Install official raster downloader dependencies
+        run: |
+          python -m pip install --disable-pip-version-check numpy pyproj rasterio
+      - name: Verify and sample actual GUGiK WCS GeoTIFF elevations
+        run: |
+          python tools/build_smr17_nmt.py --spacing 8 --sectors hala golgota skrzyczne
+      - name: Check output provenance and surface resolution
+        run: |
+          python - <<'PY'
+          import json, pathlib, base64
+          d=pathlib.Path("v17/data")
+          index=json.loads((d/"manifest.json").read_text())
+          assert sorted(index["sectors"])==["golgota","hala","skrzyczne"]
+          for sector in index["sectors"]:
+              data=json.loads((d/(sector+".json")).read_text())
+              t=data["terrain"]; n=t["cols"]*t["rows"]
+              assert len(base64.b64decode(t["heights16"]))==2*n and n>15000
+              assert data["source"]["coverage_percent"]>=98.5
+              assert data["source"]["downloaded_from"]=="real WCS GetCoverage GeoTIFF"
+              assert 6 <= t["step_x"] <= 9 and 6 <= t["step_z"] <= 9
+              print(sector,"GUGiK terrain VERIFIED:",n,"vertices",t["step_x"],t["step_z"])
+          PY
+      - name: Commit verified terrain products only
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add v17/data/manifest.json v17/data/hala.json v17/data/golgota.json v17/data/skrzyczne.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Import verified GUGiK NMT terrain at 8m scene mesh across 3 sectors"
+            git push origin HEAD:stage-17-gugik-lidar-landmarks
+          else
+            echo "No changes in verified NMT data."
+          fi
