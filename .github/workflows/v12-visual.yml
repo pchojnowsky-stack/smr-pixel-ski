@@ -1,0 +1,38 @@
+name: SMR SnowEngine 1.2 WebGL2 Visual QA
+on:
+  push:
+    branches: [stage-12-webgl2-snow-engine, main]
+    paths:
+      - 'v12/**'
+      - '.github/workflows/v12-visual.yml'
+  pull_request:
+    paths:
+      - 'v12/**'
+      - '.github/workflows/v12-visual.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  webgl2:
+    runs-on: ubuntu-latest
+    timeout-minutes: 19
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate independent rendering and physics JS
+        run: |
+          node --check v12/engine.js
+          node --check v12/geometry.js
+          node --check v12/game.js
+          node --check v12/freeride.js
+      - name: Setup actual browser rendering
+        run: |
+          npm install --no-save playwright
+          npx playwright install chromium --with-deps
+      - name: WebGL2 smoke, screenshot and touch tests
+        run: node v12/visual-qa.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smr-v12-snowengine-screens
+          path: v12/qa/
+          retention-days: 14
