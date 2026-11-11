@@ -17,7 +17,7 @@ jobs:
     timeout-minutes: 16
     steps:
       - uses: actions/checkout@v4
-      - run: node --check v09/game.js && node --check v09/skier.js && node --check v09/visual-qa.cjs
+      - run: node --check v09/game.js && node --check v09/forest.js && node --check v09/skier.js && node --check v09/visual-qa.cjs
       - run: |
           npm install --no-save playwright
           npx playwright install chromium --with-deps

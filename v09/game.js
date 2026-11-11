@@ -19,7 +19,7 @@ try{engine=new B.Engine(canvas,true,{powerPreference:"high-performance"});}catch
 const mobile=/Android|iPhone|iPad|Mobile/i.test(navigator.userAgent);
 engine.setHardwareScalingLevel(Math.max(1,(devicePixelRatio||1)/(mobile?1.15:1.3)));
 const scene=new B.Scene(engine);
-scene.clearColor=new B.Color4(.69,.83,.92,1);scene.ambientColor=new B.Color3(.68,.79,.92);
+scene.clearColor=new B.Color4(.66,.8,.91,1);scene.ambientColor=new B.Color3(.73,.81,.92);
 scene.fogMode=B.Scene.FOGMODE_EXP2;scene.fogDensity=.00026;scene.fogColor=new B.Color3(.73,.84,.94);
 const camera=new B.FreeCamera("geospatial chase",V(0,290,-42),scene);
 camera.fov=.77;camera.minZ=.5;camera.maxZ=1500;camera.inputs.clear();scene.activeCamera=camera;
@@ -27,8 +27,8 @@ const ambient=new B.HemisphericLight("sky",V(-.2,1,.1),scene);ambient.intensity=
 const sun=new B.DirectionalLight("sun",V(-.7,-1,.3),scene);sun.intensity=1.07;sun.position=V(-200,500,150);
 const shadow=new B.ShadowGenerator(mobile?512:1024,sun);shadow.usePercentageCloserFiltering=true;shadow.bias=.001;
 const material=(name,color)=>{const m=new B.StandardMaterial(name,scene);m.diffuseColor=B.Color3.FromHexString(color);m.specularColor=new B.Color3(.09,.11,.12);return m;};
-const snow=material("snow #DEM","#c7d8e6"),piste=material("illustrative piste","#e6f1f7");
-const forestMat=material("spruces","#26554d"),trunkMat=material("trunks","#746258");
+const snow=material("snow #DEM","#d8e8f3"),piste=material("illustrative piste","#e8f1f7");
+// Spruce forest is built from layered, vertex-colour snow canopies in forest.js.
 const roofMat=material("roofs","#55646f"),wallMat=material("OSM buildings","#a38b79"),steel=material("cable supports","#5c7180");
 piste.alpha=1;piste.backFaceCulling=false;piste.disableLighting=true;piste.emissiveColor=new B.Color3(.82,.89,.94);piste.zOffset=-3;
 const dem=map.terrain;
@@ -78,18 +78,8 @@ function pisteRibbon(){
  const m=new B.Mesh("UNMEASURED 38m visual piste band",scene);d.applyToMesh(m);m.material=piste;m.isPickable=false;
 }
 pisteRibbon();
-const spruce=B.MeshBuilder.CreateCylinder("spruce thin instance",{diameterTop:0,diameterBottom:11,height:20,tessellation:7},scene);
-spruce.material=forestMat;spruce.isPickable=false;
-const trunk=B.MeshBuilder.CreateCylinder("trunk thin instance",{diameter:.85,height:4.6,tessellation:6},scene);trunk.material=trunkMat;
-const spruceInstances=[],trunkInstances=[];
-for(const [x,z,scale] of map.forest_trees){
- const y=height(x,z);
- B.Matrix.Compose(V(scale,scale,scale),B.Quaternion.Identity(),V(x,y+11*scale,z)).copyToArray(spruceInstances,spruceInstances.length);
- B.Matrix.Compose(V(scale,scale,scale),B.Quaternion.Identity(),V(x,y+2.2*scale,z)).copyToArray(trunkInstances,trunkInstances.length);
-}
-spruce.thinInstanceSetBuffer("matrix",new Float32Array(spruceInstances),16,true);
-trunk.thinInstanceSetBuffer("matrix",new Float32Array(trunkInstances),16,true);
-spruce.thinInstanceRefreshBoundingInfo();trunk.thinInstanceRefreshBoundingInfo();
+if(!window.SMR_FOREST)throw Error("SMR_FOREST module unavailable");
+const forest=window.SMR_FOREST.createForest(B,scene,map.forest_trees,height);
 for(const b of map.buildings){
  const poly=b.p;if(!poly||poly.length<3)continue;
  const xs=poly.map(p=>p[0]),zs=poly.map(p=>p[1]);
@@ -153,7 +143,7 @@ function step(dt){
  skier.position.copyFromFloats(x,y,z);
  skier.rotation.y=Math.atan2(tx,tz);
  controller.animate({turn:state.lean,speed:state.speed,time:state.time,tuck:Number(input.tuck),braking:input.brake,airborne:state.airborne,active:true,dt,px:x,py:y,pz:z});
- const desired=V(x+1.6,y+31,z-25),look=V(x+tx/len*19,y+1,z+tz/len*19);
+ const desired=V(x+1.6,y+36,z-32),look=V(x+tx/len*22,y+1,z+tz/len*22);
  camera.position=B.Vector3.Lerp(camera.position,desired,clamp(dt*3.5,0,1));
  camera.setTarget(B.Vector3.Lerp(camera.getTarget(),look,clamp(dt*3.8,0,1)));
  $("speed").textContent=Math.round(state.speed*3.6)+" km/h";
@@ -165,9 +155,9 @@ let last=0,frames=0,elapsed=0;
 engine.runRenderLoop(()=>{
  const now=performance.now(),dt=last?Math.min(.05,(now-last)/1000):1/60;last=now;
  step(dt);scene.render();frames++;elapsed+=dt;
- if(elapsed>1.3){$("fps").textContent=Math.round(frames/elapsed)+" FPS · GEO 0.9";elapsed=0;frames=0;}
+ if(elapsed>1.3){$("fps").textContent=Math.round(frames/elapsed)+" FPS · GEO 0.9.2";elapsed=0;frames=0;}
 });
 window.addEventListener("resize",()=>engine.resize());
-window.__SMR_DEBUG__={get:()=>({version:"0.9.0",mode:state.mode,distance:state.distance,speed:state.speed,routeMeters:total,trees:map.forest_trees.length,buildings:map.buildings.length,liftPoints:map.lift_b1.length,terrainVertices:dem.cols*dem.rows,meshes:scene.meshes.length,airborne:state.airborne,tuck:input.tuck,playerPosition:skier.position.asArray(),routeSource:map.reference.osm_way,widthMeasured:map.reference.piste_width_measured_m}),scene,engine,reset};
+window.__SMR_DEBUG__={get:()=>({version:"0.9.2",mode:state.mode,distance:state.distance,speed:state.speed,routeMeters:total,trees:map.forest_trees.length,treeTriangles:forest.triangles,forestRenderMeshes:forest.drawMeshes,buildings:map.buildings.length,liftPoints:map.lift_b1.length,terrainVertices:dem.cols*dem.rows,meshes:scene.meshes.length,airborne:state.airborne,tuck:input.tuck,playerPosition:skier.position.asArray(),routeSource:map.reference.osm_way,widthMeasured:map.reference.piste_width_measured_m}),scene,engine,reset};
 reset();
 })();
