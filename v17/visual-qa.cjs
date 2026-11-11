@@ -33,6 +33,25 @@ const server=http.createServer((req,res)=>{
    if(await page.locator("#controls button").count()!==2)throw Error("Expected two pole controls");
    await page.locator("#start").click();
    await page.waitForFunction(()=>window.__SMR_DEBUG__.get().mode==="play");
+   // Regression: real browser hit-testing. Synthetic dispatchEvent used below does NOT
+   // catch pointer-events:none inherited from #controls.
+   for(const [id,sign] of [["left",-1],["right",1]]){
+    const button=page.locator("#"+id),rect=await button.boundingBox();
+    if(!rect||rect.width<32||rect.height<32)throw Error(id+" pole button not visible");
+    const x=rect.x+rect.width/2,y=rect.y+rect.height/2;
+    const hit=await page.evaluate(([x,y])=>document.elementFromPoint(x,y)?.closest("button")?.id||null,[x,y]);
+    if(hit!==id)throw Error(id+" button is not touch-hit-testable, element hit="+hit);
+    const before=await page.evaluate(()=>window.__SMR_DEBUG__.get().heading);
+    await page.mouse.move(x,y);
+    await page.mouse.down();
+    await page.waitForFunction(id=>window.__SMR_DEBUG__.get().controls[id]===true,id,{timeout:10000});
+    await page.waitForFunction(([before,sign])=>{
+     const heading=window.__SMR_DEBUG__.get().heading;
+     return sign*(heading-before)>.06;
+    },[before,sign],{timeout:18000});
+    await page.mouse.up();
+    await page.waitForFunction(id=>!window.__SMR_DEBUG__.get().controls[id],id,{timeout:5000});
+   }
    await page.locator("#left").dispatchEvent("pointerdown",{pointerId:1});
    await page.waitForFunction(()=>window.__SMR_DEBUG__.get().controls.left);
    await page.locator("#right").dispatchEvent("pointerdown",{pointerId:2});

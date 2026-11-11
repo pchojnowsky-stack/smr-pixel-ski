@@ -53,7 +53,7 @@ body.playing #location{opacity:.6}
  #resortSummary{grid-column:1/-1;margin-top:1px}}
 @media(max-width:650px){#resortMenu{top:124px;padding:7px 9px;font-size:10px}}
 #controls{left:clamp(12px,3vw,32px);right:clamp(12px,3vw,32px);align-items:end}
-#controls .pole{height:94px;width:94px;background:#153e58b8;border-radius:27px;border:2px solid #d8effbc4;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;font-size:23px}
+#controls .pole{pointer-events:auto;position:relative;z-index:2;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;height:94px;width:94px;background:#153e58b8;border-radius:27px;border:2px solid #d8effbc4;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;font-size:23px}
 #controls .pole .pole-icon{font-size:23px;line-height:1;transform:rotate(-14deg)}
 #controls .pole small{font-size:10px;letter-spacing:.6px}
 #controls .pole:active,#controls .pole.pressed{background:#d18c46db}
