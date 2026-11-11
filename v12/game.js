@@ -45,6 +45,36 @@ const skier=renderer.mesh("carving skier",g.skier(),null,true);
 const npcInstances=[];
 for(let i=0;i<13;i++){const p=at(90+(i*117)%Math.max(200,length-90));npcInstances.push(p.x,height(p.x,p.z),p.z,.83);}
 const npc=renderer.mesh("NPC skiers",g.skier(),npcInstances,true);
+
+const snowParticleBuilder=g.builder();
+snowParticleBuilder.quad([-.25,0,0],[.25,0,0],[.25,.55,0],[-.25,.55,0],[.98,.99,1],true);
+snowParticleBuilder.quad([0,0,-.25],[0,0,.25],[0,.55,.25],[0,.55,-.25],[.88,.93,.99],true);
+const particles=Array.from({length:85},()=>({x:0,y:-900,z:0,age:99,vx:0,vy:0,vz:0,scale:.1}));
+const sprayMesh=renderer.mesh("carving powder spray",snowParticleBuilder.done(),Array.from({length:85},()=>[0,-900,0,.01]).flat(),false);
+let sprayAccumulator=0;
+function updateSnowSpray(dt){
+ for(const p of particles){
+  if(p.age<.95){p.age+=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.z+=p.vz*dt;p.vy-=2.5*dt;}
+ }
+ if(!state.airborne&&state.speed>8){
+  const density=state.speed*(Math.abs(state.steer)*.65+(input.brake?.7:.15));
+  sprayAccumulator+=dt*density*1.75;
+  while(sprayAccumulator>=1){
+   sprayAccumulator-=1;
+   const p=particles.find(v=>v.age>.95);
+   if(!p)break;
+   const side=Math.cos(state.heading),sideZ=-Math.sin(state.heading);
+   const backwards=Math.sin(state.heading),backZ=Math.cos(state.heading);
+   const angle=(Math.random()-.5),sign=Math.random()<.5?-1:1;
+   p.x=state.x+sign*.45*side-backwards*.8;p.z=state.z+sign*.45*sideZ-backZ*.8;
+   p.y=height(p.x,p.z)+.16;p.vx=side*(angle*7+sign*1.5)-backwards*2;
+   p.vz=sideZ*(angle*7+sign*1.5)-backZ*2;p.vy=1.2+Math.random()*3.2;
+   p.age=0;p.scale=.3+Math.random()*.7;
+  }
+ } else sprayAccumulator=0;
+ renderer.updateInstances(sprayMesh,particles.flatMap(p=>[p.x,p.age>.95?-900:p.y,p.z,p.scale*Math.max(.03,1-p.age/.95)]));
+}
+
 const chairBuilder=g.builder();
 chairBuilder.box(0,-4.4,0,3.2,.22,1,[.28,.41,.49]);
 chairBuilder.box(0,-4.2,.52,3.2,1.1,.22,[.29,.42,.5]);
@@ -126,7 +156,7 @@ function frame(dt){
  if(mode!=="play")return;
  ride.step(input,dt);
  skier.offset=[state.x,state.groundY+.13+state.jumpY,state.z];
- updateTracks(dt);updateNPCs();updateChairs();
+ updateTracks(dt);updateSnowSpray(dt);updateNPCs();updateChairs();
  const dx=Math.sin(state.heading),dz=Math.cos(state.heading),aerialDistance=(aerial?95:26)*zoom,heightOffset=(aerial?140:20)*zoom;
  const desired=[state.x-dx*aerialDistance+aerialDistance*.07,state.groundY+heightOffset,state.z-dz*aerialDistance];
  const look=[state.x+dx*(aerial?20:12),state.groundY+state.jumpY*.2,state.z+dz*(aerial?20:12)];
@@ -146,7 +176,7 @@ function tick(now){
 reset();skier.offset=[state.x,state.groundY+.13,state.z];updateNPCs();updateChairs();
 window.__SMR_DEBUG__={get:()=>({version:"1.2.0",engine:"SnowEngine WebGL2",noBabylon:typeof window.BABYLON==="undefined",
  mode,freeTerrain:true,x:state.x,z:state.z,heading:state.heading,speed:state.speed,airborne:state.airborne,
- trees:trees.length,terrainVertices:T.cols*T.rows,chairs:16,npcs:13,trailPoints:traceLeft.length,
+ trees:trees.length,terrainVertices:T.cols*T.rows,chairs:16,npcs:13,snowParticles:particles.filter(p=>p.age<.95).length,trailPoints:traceLeft.length,
  camera:aerial?"aerial":"close",zoom,widthMeasured:geo.reference.piste_width_measured_m,
  webgl2:!!renderer.gl,shadowMap:renderer.shadowReady,sourceRunId:geo.source.run_id,frame:renderer.frame}),renderer,ride};
 requestAnimationFrame(tick);
