@@ -19,7 +19,13 @@ async function release(page,id,pointerId=7){await page.locator("#"+id).dispatchE
    const ctx=await browser.newContext({viewport:{width,height},isMobile:true,hasTouch:true,deviceScaleFactor:1});
    const page=await ctx.newPage(),errors=[];page.on("pageerror",err=>errors.push(err.message));
    await page.goto("http://127.0.0.1:4133/",{waitUntil:"domcontentloaded",timeout:60000});
-   await page.waitForFunction(()=>window.__SMR_DEBUG__?.get().frame>1,{timeout:70000});
+   try {await page.waitForFunction(()=>window.__SMR_DEBUG__&&window.__SMR_DEBUG__.get().frame>1,{timeout:25000});}
+   catch(e){const diag=await page.evaluate(()=>({error:document.querySelector("#error")?.textContent,
+     errorHidden:document.querySelector("#error")?.hidden,loaded:document.readyState,
+     engine:!!window.SnowEngine,game:!!window.__SMR_DEBUG__,tricks:!!window.SMR_TRICKS,
+     scripts:[...document.scripts].map(s=>s.src)})).catch(e=>({evaluationError:e.message}));
+     throw Error(name+" startup diagnostics "+JSON.stringify(diag)+" JS "+errors.join("|")+" "+e.message);
+   }
    if(await page.locator("#controls button").count()!==4)throw Error(name+" not exactly four touch controls");
    if(await page.locator("#brake, #tuck").count())throw Error(name+" legacy controls still visible");
    await page.locator("#start").click();await page.waitForFunction(()=>window.__SMR_DEBUG__.get().mode==="play");
