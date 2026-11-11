@@ -6,7 +6,7 @@ const server=http.createServer((req,res)=>{
  const url=new URL(req.url,"http://localhost"),pathname=decodeURIComponent(url.pathname);
  const f=path.resolve(root,"."+pathname),safe=f===root||f.startsWith(root+path.sep);
  if(!safe){res.writeHead(403).end();return;}
- const file=f===path.join(root,"v15")?path.join(f,"index.html"):f;
+ const file=f===path.join(root,"v16")?path.join(f,"index.html"):f;
  fs.readFile(file,(err,data)=>{if(err){res.writeHead(404).end("Not found");return;}
   res.setHeader("Content-Type",mime[path.extname(file)]||"application/octet-stream");res.end(data);});
 });
