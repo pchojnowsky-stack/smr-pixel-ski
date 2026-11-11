@@ -24,7 +24,7 @@ await page.locator('#brake').dispatchEvent('pointerdown',{pointerId:2});await pa
 if(status.mode!=='play'||status.distance<0||status.trees<300)throw Error(name+' runtime smoke failed: '+JSON.stringify(status));
 const beforeTuck=await page.evaluate(()=>window.__SMR_DEBUG__.get());
 await page.locator('#tuck').dispatchEvent('pointerdown',{pointerId:3});
-await page.waitForTimeout(500);
+await page.waitForFunction(()=>window.__SMR_DEBUG__.get().tuck>.65,{timeout:20000});
 const duringTuck=await page.evaluate(()=>window.__SMR_DEBUG__.get());
 if(duringTuck.tuck<.65)throw Error(name+' tuck button did not engage');
 await page.locator('#tuck').dispatchEvent('pointerup',{pointerId:3});
