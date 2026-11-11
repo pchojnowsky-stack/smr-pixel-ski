@@ -69,8 +69,9 @@ function terrainMesh(){
  return m;
 }
 terrainMesh();
-const forest=window.SMR_FOREST.createForest(B,world,geo.forest_trees,height);
-if(geo.forest_trees.length>0){shadow.addShadowCaster(forest.mesh,false);}
+const renderTrees=mobile?geo.forest_trees.filter((_,i)=>i%2===0):geo.forest_trees;
+const forest=window.SMR_FOREST.createForest(B,world,renderTrees,height);
+// Thin-instance canopy already has baked white snow caps; avoid expensive shadow rendering on phones.
 function box(name,w,h,d,x,y,z,m,angle=0){const o=B.MeshBuilder.CreateBox(name,{width:w,height:h,depth:d},world);
  o.position=V(x,y,z);o.rotation.y=angle;o.material=m;o.isPickable=false;return o;}
 for(const building of geo.buildings){
@@ -167,6 +168,6 @@ engine.runRenderLoop(()=>{
  world.render();frames++;timer+=dt;if(timer>1.2){$("fps").textContent=Math.round(frames/timer)+" FPS · OPEN SKI MAP 1.0";timer=0;frames=0;}
 });
 window.addEventListener("resize",()=>engine.resize());
-window.__SMR_DEBUG__={get:()=>({version:"1.0.0",mode:state.mode,distance:state.distance,sourceRunId:geo.source.run_id,terrainVertices:terrain.cols*terrain.rows,trees:geo.forest_trees.length,buildings:geo.buildings.length,chairs:chairs.length,routeMeters:total,runStartHeight:geo.reference.run_altitude_start_m,runEndHeight:geo.reference.run_altitude_end_m,airborne:state.airborne,widthMeasured:geo.reference.piste_width_measured_m,player:skier.position.asArray(),fps:Math.round(engine.getFps())}),scene:world,engine,reset};
+window.__SMR_DEBUG__={get:()=>({version:"1.0.0",mode:state.mode,distance:state.distance,sourceRunId:geo.source.run_id,terrainVertices:terrain.cols*terrain.rows,trees:geo.forest_trees.length,renderedTrees:renderTrees.length,buildings:geo.buildings.length,chairs:chairs.length,routeMeters:total,runStartHeight:geo.reference.run_altitude_start_m,runEndHeight:geo.reference.run_altitude_end_m,airborne:state.airborne,widthMeasured:geo.reference.piste_width_measured_m,player:skier.position.asArray(),fps:Math.round(engine.getFps())}),scene:world,engine,reset};
 reset();
 })();
