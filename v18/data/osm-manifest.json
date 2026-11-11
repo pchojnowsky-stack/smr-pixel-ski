@@ -1,7 +1,8 @@
 {
   "format": "smr18-osm-geolocated-manifest",
   "sectors": [
-    "hala"
+    "hala",
+    "golgota"
   ],
   "sources": {
     "hala": {
@@ -10,6 +11,14 @@
       "buildings": 350,
       "forest_area_m2": 433658,
       "mapped_buildings": 410,
+      "verified_polygon": true
+    },
+    "golgota": {
+      "endpoint": "https://maps.mail.ru/osm/tools/overpass/api/interpreter (alternate)",
+      "trees": 577,
+      "buildings": 123,
+      "forest_area_m2": 325087,
+      "mapped_buildings": 123,
       "verified_polygon": true
     }
   }
