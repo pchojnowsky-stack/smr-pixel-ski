@@ -27,3 +27,17 @@ Na GitHubie uruchom workflow `SMR 0.9 Geodata Intake`, a następnie pobierz jego
 - Geometrie: © OpenStreetMap contributors (ODbL 1.0), https://www.openstreetmap.org/copyright
 - DEM globalny: Mapzen Terrain Tiles, https://registry.opendata.aws/terrain-tiles/ (sprawdź wymagane atrybucje datasetu)
 - Docelowe NMT 1m: GUGiK https://www.geoportal.gov.pl/pl/dane/numeryczny-model-terenu-nmt/
+
+
+## Grywalny podgląd 0.9 — geolokalizowane dane (weryfikacja WebGL)
+Po zatwierdzeniu i scaleniu na GitHub Pages: https://pchojnowsky-stack.github.io/smr-pixel-ski/v09/
+
+- Tor ruchu / oś stoku z **OSM way 202733799**, geometria w lokalnych metrach; długość polilinii **1686.4 m** przy katalogowej 2014 m — tej rozbieżności nie korygujemy fikcyjnie.
+- Rzeczywisty obszar DEM **Mapzen Terrarium**, siatka 6812 wierzchołków; nie jest to jeszcze dokładny NMT GUGiK 1 m.
+- **132 drzewa** próbkowane WYŁĄCZNIE wewnątrz rzeczywistych poligonów lasów OSM, a nie w rzeczywistych punktach każdego drzewa.
+- **34 pobliskie budynki** w obrysie OSM, bryły i część wysokości uproszczone, **10 punktów** przebiegu kolejki B1 OSM.
+- Pas trasy **38 m to szerokość POGLĄDOWA**, nie wynik pomiarów; nie wolno komunikować jej jako autentycznej szerokości.
+- Dotykowe sterowanie lewo/prawo, zjazd, hamowanie, skok; uproszczony ruch po osi trasy.
+- Zrzuty z faktycznego WebGL w 1280×720 i 390×844 oraz logi przez workflow `SMR 0.9 Geodata Playable Visual QA`.
+
+**Stan realizmu:** geolokalizowane są przebieg, wzniesienia niskiej rozdzielczości oraz orientacyjne pokrycie terenu. Materiały, detale leśne, bryły budynków, pochylenia krótkich fragmentów i obrzeża stoku wymagają dalszego modelowania. Wersja jest **wczesną podglądową sceną GIS**, nie ukończoną trasą 1:1. W szczególności środek stoku w OSM nie jest gwarancją dokładnych krawędzi zjazdu.
