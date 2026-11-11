@@ -54,7 +54,7 @@ def fetch_tile(x0: float,y0: float,dx: float=TILE_METERS) -> tuple[np.ndarray, o
             req=urllib.request.Request(url,headers={"User-Agent":"SMR-Pixel-Ski/1.7 (GUGiK WCS terrain build)","Accept":"image/tiff,*/*"})
             with urllib.request.urlopen(req,timeout=TIMEOUT) as response:
                 data=response.read(10_000_000)
-            if not data[:4] in (b"II*\\x00",b"MM\\x00*"):
+            if not data[:4] in (b"II*\x00",b"MM\x00*"):
                 raise RuntimeError("WCS did not return GeoTIFF (first bytes "+repr(data[:130])+")")
             with MemoryFile(data) as mem:
                 with mem.open() as src:
@@ -135,7 +135,7 @@ def build(sector: str,spacing: float,output_dir: pathlib.Path) -> dict:
        "heights16":encoded,"height_scale_m":.1}
     }
     output_dir.mkdir(parents=True,exist_ok=True)
-    dst=output_dir/(sector+".json");dst.write_text(json.dumps(layer,separators=(",",":"))+"\\n")
+    dst=output_dir/(sector+".json");dst.write_text(json.dumps(layer,separators=(",",":"))+"\n")
     print(f"{dst} {dst.stat().st_size} bytes; terrain min={heights.min():.1f} max={heights.max():.1f}, offset={delta:.2f}",flush=True)
     return layer["source"]
 
@@ -151,6 +151,6 @@ def main():
         sources[sector]=build(sector,a.spacing,a.output)
     (a.output/"manifest.json").write_text(json.dumps({
       "source":"verified GUGiK WCS elevation","sectors":sorted(sources.keys()),
-      "sources":sources,"not_a_lidar_point_cloud":True},ensure_ascii=False,indent=2)+"\\n")
+      "sources":sources,"not_a_lidar_point_cloud":True},ensure_ascii=False,indent=2)+"\n")
 if __name__=="__main__":
     main()
