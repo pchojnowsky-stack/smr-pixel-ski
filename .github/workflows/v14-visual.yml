@@ -1,0 +1,36 @@
+name: SMR 1.4 resort geodata and smartphone QA
+on:
+  push:
+    branches: [stage-14-expanded-resort, main]
+    paths: ['v14/**','.github/workflows/v14-visual.yml']
+  pull_request:
+    paths: ['v14/**','.github/workflows/v14-visual.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python tools/validate_expanded_resort.py
+      - run: |
+          node --check v14/game.js
+          node --check v14/geometry.js
+          node --check v14/engine.js
+          node --check v14/freeride.js
+          node --check v14/tricks.js
+      - run: |
+          npm install --no-save playwright
+          npx playwright install chromium --with-deps
+      - run: node v14/visual-qa.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smr-v14-expanded-resort-mobile-screens
+          path: v14/qa/
+          retention-days: 14
