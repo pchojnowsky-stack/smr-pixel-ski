@@ -17,7 +17,7 @@ const M={
  }
 };
 const VS="#version 300 es\nprecision highp float;\nlayout(location=0) in vec3 aPos;\nlayout(location=1) in vec3 aNormal;\nlayout(location=2) in vec3 aColor;\nlayout(location=3) in vec4 aInstance;\nuniform mat4 uViewProj;uniform mat4 uLightVP;uniform float uInstances;uniform vec3 uOffset;\nout vec3 vColor;out vec3 vNormal;out vec3 vWorld;out vec4 vShadow;\nvoid main(){vec3 p=aPos,n=aNormal;if(uInstances>.5){float angle=fract(aInstance.x*.017+aInstance.z*.011)*6.283185,c=cos(angle),s=sin(angle);p=vec3((c*aPos.x-s*aPos.z)*aInstance.w+aInstance.x,aPos.y*aInstance.w+aInstance.y,(s*aPos.x+c*aPos.z)*aInstance.w+aInstance.z);n=vec3(c*aNormal.x-s*aNormal.z,aNormal.y,s*aNormal.x+c*aNormal.z);}p+=uOffset;vColor=aColor;vNormal=normalize(n);vWorld=p;vShadow=uLightVP*vec4(p,1.);gl_Position=uViewProj*vec4(p,1.);}";
-const FS="#version 300 es\nprecision highp float;\nin vec3 vColor;in vec3 vNormal;in vec3 vWorld;in vec4 vShadow;\nuniform vec3 uCamera;uniform vec3 uSun;uniform vec3 uFog;uniform float uShadowOn;uniform sampler2D uShadow;\nout vec4 frag;\nfloat vis(){if(uShadowOn<.5)return 1.;vec3 p=vShadow.xyz/vShadow.w*.5+.5;if(p.x<0.||p.x>1.||p.y<0.||p.y>1.||p.z>1.)return 1.;vec2 texel=1./vec2(textureSize(uShadow,0));float sum=0.;float bias=.0016;for(int x=-1;x<=1;x++)for(int y=-1;y<=1;y++){sum+=p.z-bias<texture(uShadow,p.xy+vec2(float(x),float(y))*texel).r?1.:0.;}return sum/9.;}\nvoid main(){vec3 n=normalize(vNormal);float sun=max(0.,dot(n,normalize(uSun)));vec3 color=vColor*(.61+.99*sun*mix(.36,1.,vis()))*vec3(.97,1.,1.055);float d=length(vWorld-uCamera);float fog=clamp(1.-exp(-.00000026*d*d),0.,.65);color=mix(color,uFog,fog);color=pow(max(color,vec3(.001)),vec3(.95));frag=vec4(color,1.);}";
+const FS="#version 300 es\nprecision highp float;\nin vec3 vColor;in vec3 vNormal;in vec3 vWorld;in vec4 vShadow;\nuniform vec3 uCamera;uniform vec3 uSun;uniform vec3 uFog;uniform float uShadowOn;uniform sampler2D uShadow;\nout vec4 frag;\nfloat vis(){if(uShadowOn<.5)return 1.;vec3 p=vShadow.xyz/vShadow.w*.5+.5;if(p.x<0.||p.x>1.||p.y<0.||p.y>1.||p.z>1.)return 1.;vec2 texel=1./vec2(textureSize(uShadow,0));float sum=0.;float bias=.0016;for(int x=-1;x<=1;x++)for(int y=-1;y<=1;y++){sum+=p.z-bias<texture(uShadow,p.xy+vec2(float(x),float(y))*texel).r?1.:0.;}return sum/9.;}\nvoid main(){vec3 n=normalize(vNormal);float sun=max(0.,dot(n,normalize(uSun)));vec3 color=vColor*(.47+.54*sun*mix(.42,1.,vis()))*vec3(1.00,.955,1.035);if(vColor.r>.6&&vColor.g>.6&&n.y>.38){float groom=.014*sin(vWorld.x*.94+vWorld.z*.27);float grain=.022*sin(vWorld.x*.041+vWorld.z*.18)*sin(vWorld.z*.07);color*=1.+groom+grain;}float d=length(vWorld-uCamera);float fog=clamp(1.-exp(-.00000026*d*d),0.,.65);color=mix(color,uFog,fog);color=pow(max(color,vec3(.001)),vec3(.95));frag=vec4(color,1.);}";
 const DVS="#version 300 es\nprecision highp float;\nlayout(location=0) in vec3 aPos;layout(location=3) in vec4 aInstance;uniform mat4 uLightVP;uniform float uInstances;uniform vec3 uOffset;\nvoid main(){vec3 p=aPos;if(uInstances>.5){float angle=fract(aInstance.x*.017+aInstance.z*.011)*6.283185,c=cos(angle),s=sin(angle);p=vec3((c*aPos.x-s*aPos.z)*aInstance.w+aInstance.x,aPos.y*aInstance.w+aInstance.y,(s*aPos.x+c*aPos.z)*aInstance.w+aInstance.z);}gl_Position=uLightVP*vec4(p+uOffset,1.);}";
 const DFS="#version 300 es\nprecision highp float;\nvoid main(){}";
 class SnowEngine{
@@ -37,7 +37,7 @@ class SnowEngine{
   gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.DEPTH_ATTACHMENT,gl.TEXTURE_2D,this.shadowDepth,0);gl.drawBuffers([gl.NONE]);gl.readBuffer(gl.NONE);
   this.shadowReady=gl.checkFramebufferStatus(gl.FRAMEBUFFER)===gl.FRAMEBUFFER_COMPLETE;gl.bindFramebuffer(gl.FRAMEBUFFER,null);
   gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);gl.enable(gl.CULL_FACE);gl.cullFace(gl.BACK);
-  this.sun=[-.57,.83,.38];this.fog=[.79,.83,.91];
+  this.sun=[-.57,.83,.38];this.fog=[.78,.78,.85];
  }
  program(vs,fs){
   const gl=this.gl,compile=(kind,src)=>{const sh=gl.createShader(kind);gl.shaderSource(sh,src);gl.compileShader(sh);
@@ -78,7 +78,7 @@ class SnowEngine{
   }gl.bindVertexArray(null);
  }
  render(camera,target){
-  const gl=this.gl;this.resize();const vp=M.mul(M.perspective(.69,this.canvas.width/Math.max(1,this.canvas.height),.5,2600),M.lookAt(camera,target));
+  const gl=this.gl;this.resize();const vp=M.mul(M.perspective(this.canvas.height>this.canvas.width?.98:.70,this.canvas.width/Math.max(1,this.canvas.height),.5,2600),M.lookAt(camera,target));
   const lightCenter=target,eye=[target[0]+this.sun[0]*440,target[1]+this.sun[1]*440,target[2]+this.sun[2]*440];
   const light=M.mul(M.ortho(-400,400,-400,400,20,1250),M.lookAt(eye,lightCenter));
   if(this.shadowReady){
@@ -89,7 +89,7 @@ class SnowEngine{
    gl.disable(gl.POLYGON_OFFSET_FILL);gl.colorMask(true,true,true,true);
   }
   gl.bindFramebuffer(gl.FRAMEBUFFER,null);gl.viewport(0,0,this.canvas.width,this.canvas.height);
-  gl.clearColor(.76,.82,.9,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+  gl.clearColor(.78,.78,.85,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
   gl.useProgram(this.colorProgram);const loc=n=>gl.getUniformLocation(this.colorProgram,n);
   gl.uniformMatrix4fv(loc("uViewProj"),false,vp);gl.uniformMatrix4fv(loc("uLightVP"),false,light);
   gl.uniform3fv(loc("uCamera"),camera);gl.uniform3fv(loc("uSun"),this.sun);gl.uniform3fv(loc("uFog"),this.fog);
