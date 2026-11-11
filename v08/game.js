@@ -1,4 +1,4 @@
-/* SMR Pixel Ski 0.8 — Stage IV: modular resort infrastructure. */
+/* SMR Pixel Ski 0.8.1 — dynamic downhill carving, tuck and jump. */
 (() => {
   'use strict';
   const $ = id => document.getElementById(id);
@@ -209,30 +209,44 @@
   if(!window.SMR_SKIER)throw Error('SMR_SKIER missing. Check skier.js preload.');
   const skierController=window.SMR_SKIER.createSkier(B,scene,shadows);
   const skier=skierController.root;
-    const input={left:false,right:false,brake:false};
-  const state={mode:'menu',x:center(0),z:0,speed:13,lean:0,time:0,fps:0};
+  if(!window.SMR_RIDE)throw Error('SMR_RIDE module not loaded');
+  const ride=window.SMR_RIDE.createRide({center,pisteWidth,height});
+
+  const input={left:false,right:false,brake:false,tuck:false,jump:false};
+  const state=ride.state;
   const startElement=$('start'),overlay=$('overlay');
   const setMode=m=>{state.mode=m;overlay.hidden=m==='play';$('pause').textContent=m==='pause'?'▶':'Ⅱ';};
-  const reset=()=>{state.x=center(0);state.z=0;state.speed=13;state.lean=0;state.time=0;skierController.reset();trailL=[];trailR=[];lastTraceZ=0;skier.position=V(state.x,height(state.x,0)+.22,0);camera.position=V(state.x+1.4,height(state.x,0)+46,-37);camera.setTarget(V(state.x,height(state.x,0)+1,27));};
+  const reset=()=>{
+    ride.reset();skierController.reset();trailL=[];trailR=[];lastTraceZ=0;
+    Object.keys(input).forEach(k=>input[k]=false);
+    document.querySelectorAll('.control').forEach(el=>el.classList.remove('pressed'));
+    skier.position=V(state.x,state.groundHeight+.22,state.z);
+    camera.position=V(state.x+1.4,state.groundHeight+46,-37);
+    camera.setTarget(V(state.x,state.groundHeight+1,27));
+  };
   const play=()=>{if(state.mode!=='pause')reset();setMode('play');};
   const pause=()=>{if(state.mode==='play'){$('heading').textContent='PAUZA';$('subheading').textContent='Wznów zjazd, aby kontynuować test nowej kamery i oświetlenia.';startElement.textContent='▶ KONTYNUUJ';setMode('pause');}else if(state.mode==='pause')setMode('play');};
   startElement.onclick=play;$('pause').onclick=pause;
-  for(const key of ['left','right','brake']){
+  for(const key of ['left','right','brake','tuck','jump']){
     const el=$(key);const release=e=>{input[key]=false;el.classList.remove('pressed');e.preventDefault();};
     el.addEventListener('pointerdown',e=>{input[key]=true;el.classList.add('pressed');e.preventDefault();try{el.setPointerCapture(e.pointerId);}catch(_){}});
     for(const t of ['pointerup','pointercancel','lostpointercapture'])el.addEventListener(t,release);
   }
   window.addEventListener('keydown',e=>{
-    if(['ArrowLeft','ArrowRight','ArrowDown',' ','a','A','d','D','Escape'].includes(e.key))e.preventDefault();
+    if(['ArrowLeft','ArrowRight','ArrowDown','ArrowUp',' ','a','A','d','D','w','W','Shift','Escape'].includes(e.key))e.preventDefault();
     if(e.key==='ArrowLeft'||e.key.toLowerCase()==='a')input.left=true;
     if(e.key==='ArrowRight'||e.key.toLowerCase()==='d')input.right=true;
-    if(e.key==='ArrowDown'||e.key===' ')input.brake=true;
+    if(e.key==='ArrowDown')input.brake=true;
+    if(e.key==='ArrowUp'||e.key.toLowerCase()==='w'||e.key==='Shift')input.tuck=true;
+    if(e.key===' ')input.jump=true;
     if(e.key==='Escape')pause();
   });
   window.addEventListener('keyup',e=>{
     if(e.key==='ArrowLeft'||e.key.toLowerCase()==='a')input.left=false;
     if(e.key==='ArrowRight'||e.key.toLowerCase()==='d')input.right=false;
-    if(e.key==='ArrowDown'||e.key===' ')input.brake=false;
+    if(e.key==='ArrowDown')input.brake=false;
+    if(e.key==='ArrowUp'||e.key.toLowerCase()==='w'||e.key==='Shift')input.tuck=false;
+    if(e.key===' ')input.jump=false;
   });
   document.addEventListener('visibilitychange',()=>{if(document.hidden&&state.mode==='play')pause();});
   const tracks=[];
@@ -244,6 +258,7 @@
   };
   tracks.push(startTrack(-1),startTrack(1));
   function setTraces(){if(state.z-lastTraceZ<.7)return;lastTraceZ=state.z;
+    if(state.airborne)return;
     const x=state.x,z=state.z,y=height(x,z)+.14;
     trailL.push(V(x-.32,y,z));trailR.push(V(x+.32,y,z));
     if(trailL.length>80)trailL.shift();if(trailR.length>80)trailR.shift();
@@ -254,31 +269,31 @@
   }
   function update(dt){
     if(state.mode!=='play')return;
-    state.time+=dt;
-    const steer=Number(input.right)-Number(input.left);
-    const offPiste=Math.abs(state.x-center(state.z))>pisteWidth(state.z);
-    const incline=(height(state.x,state.z)-height(state.x,state.z+3))/3;
-    const accel=5+incline*8-.022*state.speed*state.speed-(input.brake?16:0)-(offPiste?9:0);
-    state.speed=clamp(state.speed+accel*dt,4,25);
-    state.z+=state.speed*dt;
-    state.x+=steer*state.speed*.83*dt+(center(state.z)-state.x)*.06*dt;
-    state.lean+=(steer-state.lean)*clamp(dt*5,0,1);
-    skier.position=V(state.x,height(state.x,state.z)+.22,state.z);
-    skierController.animate({turn:state.lean,speed:state.speed,time:state.time,braking:input.brake,active:true,dt,px:state.x,py:height(state.x,state.z),pz:state.z});
+    const wasAirborne=state.airborne;
+    ride.update(input,dt);
+    if(wasAirborne&&!state.airborne){trailL=[];trailR=[];lastTraceZ=state.z;}
+    skier.position=V(state.x,state.groundHeight+.22+state.jumpHeight,state.z);
+    skier.rotation.y=state.heading;
+    skierController.animate({
+      turn:state.lean,speed:state.speed,time:state.time,braking:input.brake,
+      tuck:state.tuck,airborne:state.airborne,impact:state.impact,active:true,
+      dt,px:state.x,py:state.groundHeight+state.jumpHeight,pz:state.z
+    });
     setTraces();
     $('speed').innerHTML=Math.round(state.speed*3.6)+' <span>km/h</span>';
     $('clock').textContent=Math.floor(state.time/60)+':'+String(Math.floor(state.time%60)).padStart(2,'0');
     $('distance').textContent=Math.round(Math.min(650,state.z))+' / 650 m';
     $('fill').style.width=(clamp(state.z/650,0,1)*100)+'%';
-    if(state.z>=650){$('heading').textContent='META!';$('subheading').textContent='Nowa sylwetka narciarza i efekty skrętów — etap 0.7.';startElement.textContent='↻ JEDŹ PONOWNIE';setMode('finish');}
+    if(state.z>=650){$('heading').textContent='META!';$('subheading').textContent='Dynamiczny carving, pozycja zjazdowa i skoki — test 0.8.1.';startElement.textContent='↻ JEDŹ PONOWNIE';setMode('finish');}
   }
   // Fixed world-scale chase camera; angle ~53 degrees down to the skier's viewing area.
   function updateCamera(dt){
     const x=state.x,z=state.z,y=height(x,z);
-    const wanted=V(x+1.4,y+46,z-37),view=V(x,y+1,z+27);
+    const wanted=V(x+1.4-state.lean*2,y+46+state.jumpHeight*.12,z-37),view=V(x+Math.sin(state.heading)*7,y+1+state.jumpHeight*.55,z+27);
     camera.position=B.Vector3.Lerp(camera.position,wanted,clamp(dt*3.6,0,1));
     const target=B.Vector3.Lerp(camera.getTarget(),view,clamp(dt*3.9,0,1));
     camera.setTarget(target);
+    camera.fov+=((.78+Math.min(state.speed/34,1)*.09)-camera.fov)*clamp(dt*2.6,0,1);
   }
   let oldTime=0,fpsTimer=0,fpsFrames=0;
   engine.runRenderLoop(()=>{
@@ -287,11 +302,11 @@
     resort.update(state.time,state.z);
     scene.render();
     fpsTimer+=dt;fpsFrames++;
-    if(fpsTimer>1.5){$('fps').textContent=Math.round(fpsFrames/fpsTimer)+' FPS · BABYLON 0.8';fpsTimer=0;fpsFrames=0;}
+    if(fpsTimer>1.5){$('fps').textContent=Math.round(fpsFrames/fpsTimer)+' FPS · BABYLON 0.8.1';fpsTimer=0;fpsFrames=0;}
   });
   window.addEventListener('resize',()=>engine.resize());
   window.__SMR_DEBUG__={
-    get:()=>({version:'0.8.0',renderer:'Babylon.js',mode:state.mode,distance:state.z,speed:state.speed,fps:Math.round(engine.getFps()),trees:transforms.length/16,meshes:scene.meshes.length,stage:'08-resort-infrastructure',skierParts:skierController.skierMeshes,snowEmitRate:skierController.particles.emitRate,activeCamera:camera.position.asArray(),...resort.stats()}),
+    get:()=>({version:'0.8.1',renderer:'Babylon.js',mode:state.mode,distance:state.z,speed:state.speed,fps:Math.round(engine.getFps()),trees:transforms.length/16,meshes:scene.meshes.length,stage:'08-dynamic-ride',skierParts:skierController.skierMeshes,snowEmitRate:skierController.particles.emitRate,activeCamera:camera.position.asArray(),heading:state.heading,lean:state.lean,tuck:state.tuck,airborne:state.airborne,jumpHeight:state.jumpHeight,impact:state.impact,...resort.stats()}),
     start:play,reset,engine,scene
   };
   reset();
