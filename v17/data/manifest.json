@@ -1,0 +1,5 @@
+{
+  "source": "Mapzen fallback until real GUGiK WCS files are verified and committed",
+  "sectors": [],
+  "not_a_lidar_point_cloud": true
+}
