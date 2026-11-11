@@ -2,7 +2,8 @@
   "format": "smr18-osm-geolocated-manifest",
   "sectors": [
     "hala",
-    "golgota"
+    "golgota",
+    "skrzyczne"
   ],
   "sources": {
     "hala": {
@@ -19,6 +20,14 @@
       "buildings": 123,
       "forest_area_m2": 325087,
       "mapped_buildings": 123,
+      "verified_polygon": true
+    },
+    "skrzyczne": {
+      "endpoint": "https://overpass-api.de/api/interpreter (last-resort)",
+      "trees": 1537,
+      "buildings": 350,
+      "forest_area_m2": 952550,
+      "mapped_buildings": 1163,
       "verified_polygon": true
     }
   }
