@@ -14,7 +14,7 @@ const srv=http.createServer((req,res)=>{const u=new URL(req.url,"http://localhos
   await page.waitForFunction(()=>window.__SMR_DEBUG__&&window.__SMR_DEBUG__.get().terrainVertices>26000,{timeout:50000});
   let before=await page.evaluate(()=>window.__SMR_DEBUG__.get());
   if(before.version!=="1.1.0"||!before.sourceRunId||before.trees<500||!before.freeTerrain||before.cameraMode!=="aerial"||before.chairs<10||before.widthMeasured!==null)throw Error("bad geo scene: "+JSON.stringify(before));
-  await page.locator("#start").click();await page.waitForFunction(()=>window.__SMR_DEBUG__.get().distance>0.2,{timeout:15000});
+  await page.locator("#start").click();await page.waitForFunction(()=>Math.hypot(window.__SMR_DEBUG__.get().x,window.__SMR_DEBUG__.get().z)>.5,{timeout:15000});
   const baseX=before.x;
   await page.locator("#right").dispatchEvent("pointerdown",{pointerId:5});
   await page.waitForFunction(x=>window.__SMR_DEBUG__.get().x>x+2,baseX,{timeout:25000});
