@@ -52,6 +52,23 @@ wymiary nie są geodezyjnie poświadczone.
 - [Operator — lokalizacja obiektów](https://www.szczyrkowski.pl/info/powierzchnie-reklamowe)
 - Oryginalne dane OpenStreetMap/OSM © contributors ODbL; OpenSkiMap/OpenSkiData.
 
+## Potwierdzony import GUGiK — 11 listopada 2026
+
+Oficjalna usługa WCS zwróciła poprawne rastry dla wszystkich trzech sektorów; każda
+siatka ma 100% pokrycia zweryfikowanego w imporcie.
+
+| Sektor | Punkty siatki gry | Siatka m | Dostosowanie wysokości |
+| --- | ---: | ---: | ---: |
+| Hala / Solisko | 71 500 | 7,99 | +5,237 m |
+| Golgota | 53 743 | 7,99 | +8,411 m |
+| Skrzyczne | 164 710 | 7,99 | +3,843 m |
+
+**Łącznie: 289 953 rzeczywiste próbki wysokości na siatce renderowania.**
+Współrzędne źródłowe przyjęto EPSG:2180 i źródłowy model wysokościowy
+PL-KRON86-NH, po dostosowaniu do umownej wysokości bazowej gry.
+Dokładniejsza siatka zwiększa szczegółowość zboczy, ale nie zastępuje
+pełnej fotogrametrii ani bezpośredniego renderowania każdego piksela NMT 1 m.
+
 ## Weryfikacja
 `node v17/terrain.test.cjs` weryfikuje dekoder i pochodzenie danych.
 GitHub Actions pobiera i weryfikuje **prawdziwy** raster WCS. Następny
