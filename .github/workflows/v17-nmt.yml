@@ -46,6 +46,12 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          mkdir -p /tmp/smr-nmt-verified
+          cp v17/data/manifest.json v17/data/hala.json v17/data/golgota.json v17/data/skrzyczne.json /tmp/smr-nmt-verified/
+          # Preserve other commits that arrived while the slow GUGiK download was running.
+          git fetch origin stage-17-gugik-lidar-landmarks
+          git reset --hard origin/stage-17-gugik-lidar-landmarks
+          cp /tmp/smr-nmt-verified/*.json v17/data/
           git add v17/data/manifest.json v17/data/hala.json v17/data/golgota.json v17/data/skrzyczne.json
           if ! git diff --cached --quiet; then
             git commit -m "Import verified GUGiK NMT terrain at 8m scene mesh across 3 sectors"
