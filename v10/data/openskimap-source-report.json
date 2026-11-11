@@ -1,0 +1,30 @@
+{
+  "retrieved_utc": "2026-11-11T07:58:57.518261+00:00",
+  "source_url": "https://api.openskimap.org/features.geojson?bbox=18.974%2C49.681%2C19.049%2C49.715&types=run%2Clift",
+  "bbox_wsen": [
+    18.974,
+    49.681,
+    19.049,
+    49.715
+  ],
+  "count": 42,
+  "feature_type_counts": {
+    "run": 23,
+    "lift": 19
+  },
+  "names": [
+    {
+      "id": "02e4f7c9b1aa0d5291f555855854f307c6853b30",
+      "name": "Szumarjanka",
+      "ref": "4",
+      "geometry": "LineString",
+      "sources": [
+        {
+          "id": "way/202733799",
+          "type": "openstreetmap"
+        }
+      ]
+    }
+  ],
+  "license": "OpenSkiMap/OpenSkiData uses OSM data (ODbL) and other attributed sources; verify derived dataset licensing before redistribution."
+}
