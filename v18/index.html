@@ -1,0 +1,82 @@
+<!doctype html><html lang="pl"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover,user-scalable=no"/><meta name="theme-color" content="#8b9eaf"/><title>SMR Pixel Ski 1.8 — SnowEngine WebGL2</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;touch-action:none;background:#8e9eb1;font-family:system-ui,Arial,sans-serif;color:white}canvas{position:absolute;width:100%;height:100%;inset:0;display:block}
+#hud{position:absolute;inset:0;pointer-events:none;text-shadow:0 2px 5px #193648}button{font:inherit;font-weight:800;cursor:pointer;touch-action:none}
+#top{position:absolute;left:15px;right:15px;top:max(12px,env(safe-area-inset-top));display:flex;justify-content:space-between;align-items:start}
+#brand{font-size:13px;font-weight:900;letter-spacing:1px;opacity:.79}#brand small{display:block;font-size:9px}
+#target{position:absolute;left:50%;transform:translateX(-50%);text-align:center;font-size:12px;letter-spacing:1px}
+#target strong{font-size:26px;font-style:italic;display:block;letter-spacing:.7px;font-weight:750}
+#time{text-align:center;font-size:11px;letter-spacing:1px}#clock{display:block;font-size:29px;font-weight:800;letter-spacing:2px}
+#speed{font-size:11px;display:block;letter-spacing:0}
+#pause{pointer-events:auto;position:absolute;right:6px;top:75px;width:43px;height:42px;background:#0f314e99;color:white;border:1px solid #ffffff88;border-radius:10px}
+#location{position:absolute;left:15px;top:79px;max-width:280px;font-size:11px;padding:8px 10px;background:#1a3a509c;border-radius:10px}
+#location small{display:block;opacity:.75;font-size:9px}#incline{color:#ffddb2;font-weight:800;font-size:12px;margin-top:4px}#terrainSource{font-size:9px;color:#d0f2ff;letter-spacing:.1px}#distance{font-size:11px}
+#fps{position:absolute;right:14px;top:132px;font:11px monospace}
+#cam-tools{position:absolute;right:14px;top:173px;pointer-events:auto;display:flex;gap:5px}
+#cam-tools button{background:#294965ab;color:white;border:1px solid #f2fbff7a;padding:9px;border-radius:9px;font-size:11px}
+#controls{position:absolute;left:17px;right:17px;bottom:max(17px,env(safe-area-inset-bottom));display:flex;justify-content:space-between;pointer-events:none}
+.group{display:flex;gap:7px;pointer-events:auto}
+.control{width:68px;height:73px;border:2px solid #d5edfb91;border-radius:18px;background:#244660a4;color:white;font-size:12px;font-weight:850;touch-action:none}
+.arrow{font-size:30px}.control:active,.control.pressed{background:#c8803bb9;transform:translateY(2px)}
+#overlay{position:absolute;inset:0;z-index:5;background:#102a3b72;display:grid;place-items:center;padding:15px}
+#overlay[hidden],#error[hidden]{display:none}
+#card{text-align:center;max-width:430px;background:#173246eb;border-radius:18px;padding:27px;box-shadow:0 20px 50px #1a2f48a0;border:1px solid #ffffff5c}
+#card .eyebrow{letter-spacing:2px;font-size:10px;color:#c5dce9}
+h1{margin:8px 0;font-size:33px}p{color:#e2eef4;line-height:1.8;font-size:13px}
+#start{padding:14px 26px;width:100%;background:#f5c77f;border:0;border-radius:12px;color:#1e3546;font-weight:900}
+#card small{font-size:10px;display:block;margin-top:12px;color:#adc8d9}
+#error{position:absolute;inset:0;z-index:20;display:grid;place-items:center;padding:20px;text-align:center;background:#17354a}
+body.playing #location{opacity:.55}
+@media(max-width:650px){#top{left:7px;right:7px}#brand{font-size:10px}#target strong{font-size:16px}#clock{font-size:18px}#location{top:81px;left:7px;max-width:160px;font-size:9px}#fps{top:125px}#cam-tools{top:160px}.control{width:56px;height:62px;font-size:10px}.arrow{font-size:23px}.group{gap:4px}#controls{left:6px;right:6px}h1{font-size:25px}}
+@media(max-height:480px){#location{top:63px}#cam-tools{top:72px;right:55px}#fps{top:126px}#card{padding:14px}h1{font-size:23px}p{margin:8px}}
+#controls .control{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
+#controls .control small{font-size:10px;letter-spacing:.3px;line-height:1}
+#controls .arrow{font-size:27px}.gas{background:#397d65c9}.jump{background:#b47739d9}
+#trickToast{position:absolute;top:22%;left:50%;transform:translate(-50%,-5px) scale(.92);
+ text-align:center;opacity:0;color:#fff;font-weight:950;font-size:clamp(19px,4vw,37px);
+ letter-spacing:1.8px;text-shadow:0 3px 2px #193c57,0 0 17px #173c63;transition:transform .16s,opacity .16s}
+#trickToast.visible{opacity:1;transform:translate(-50%,0) scale(1)}
+@media(max-height:480px){#controls .control{width:73px;height:67px}#trickToast{top:28%}}
+@media(max-width:650px){#controls .control{width:62px;height:67px}}
+#resortMenu{position:absolute;right:6px;top:126px;pointer-events:auto;padding:9px 11px;background:#164761bb;color:white;
+ border-radius:10px;border:1px solid #d9f0fb99;font-size:11px}
+#resortSelector{display:grid;grid-template-columns:1fr;gap:5px;text-align:left;margin:12px 0 8px}
+#resortSelector label{font-weight:800;font-size:10px;color:#cbe6f8;letter-spacing:.7px;margin-top:6px}
+#resortSelector select{width:100%;min-height:37px;border:1px solid #b9ddec95;border-radius:9px;background:#24485a;color:white;
+ font:600 13px system-ui;padding:8px 10px}
+#resortSummary{font-size:11px;color:#bedcec;margin-top:5px}
+#card{max-height:calc(100dvh - 22px);overflow:auto}
+body.playing #location{opacity:.6}
+@media(max-height:480px){#resortMenu{top:114px;right:6px}#card{max-width:520px;padding:10px 17px}
+ #card p{display:none}#resortSelector{grid-template-columns:1fr 1fr;gap:4px 10px}
+ #resortSelector label{margin-top:0}#resortSelector select{min-height:33px}
+ #resortSummary{grid-column:1/-1;margin-top:1px}}
+@media(max-width:650px){#resortMenu{top:124px;padding:7px 9px;font-size:10px}}
+#controls{left:clamp(12px,3vw,32px);right:clamp(12px,3vw,32px);align-items:end}
+#controls .pole{pointer-events:auto;position:relative;z-index:2;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;height:94px;width:94px;background:#153e58b8;border-radius:27px;border:2px solid #d8effbc4;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;font-size:23px}
+#controls .pole .pole-icon{font-size:23px;line-height:1;transform:rotate(-14deg)}
+#controls .pole small{font-size:10px;letter-spacing:.6px}
+#controls .pole:active,#controls .pole.pressed{background:#d18c46db}
+@media(max-width:650px){#controls .pole{width:78px;height:82px}}
+@media(max-height:480px){#controls .pole{width:74px;height:70px}}
+</style></head><body>
+<canvas id="scene" aria-label="SnowEngine WebGL2 Szczyrk Szumarjanka swobodna jazda 3D"></canvas>
+<div id="hud"><div id="top"><div id="brand">SMR PIXEL SKI<small>SNOW ENGINE · 1.8</small></div><div id="target">SZCZYRK<strong>Snow Resort</strong></div><div id="time">TIME<span id="clock">0:00</span><small id="speed">0 km/h</small></div></div>
+<button id="pause" aria-label="Pauza">Ⅱ</button>
+<button id="resortMenu" aria-label="Wybierz sektor i trasę">TRASY</button>
+<div id="location"><b id="zoneName">SZCZYRK</b><small id="runName">Wczytywanie tras</small><span id="distance">TRASA</span><small id="incline" aria-live="off">SPADEK —%</small><small id="terrainSource">Sprawdzanie modelu terenu</small></div>
+<div id="fps"></div><div id="cam-tools"><button id="camera">KAMERA: LOT</button><button id="zoomIn">＋</button><button id="zoomOut">－</button></div>
+<div id="trickToast" role="status" aria-live="polite"></div>
+<div id="controls">
+<button class="control pole" id="left" aria-label="Lewy kij, carving w lewo, 360 w locie"><span class="pole-icon">⛷</span><span>↶</span><small>LEWY KIJ</small></button>
+<button class="control pole" id="right" aria-label="Prawy kij, carving w prawo, 360 w locie"><span class="pole-icon">⛷</span><span>↷</span><small>PRAWY KIJ</small></button>
+</div></div>
+<div id="overlay"><div id="card"><span class="eyebrow">ETAP 1.8 · PRAWDZIWE LOKALIZACJE LASÓW I BUDYNKÓW</span><h1 id="heading">SZCZYRK RESORT</h1>
+<div id="resortSelector">
+ <label for="sectorSelect">SEKTOR OŚRODKA</label><select id="sectorSelect" aria-label="Wybierz sektor ośrodka"></select>
+ <label for="runSelect">TRASA STARTOWA</label><select id="runSelect" aria-label="Wybierz trasę narciarską"></select>
+ <div id="resortSummary">Wczytywanie ośrodka...</div>
+</div>
+<p>Trzy sektory Szczyrku: drzewa wyłącznie wewnątrz poligonów lasów OpenStreetMap, budynki na obrysach OSM bez sztucznych grup przy trasach. Indywidualne stacje A1/B1 i teren GUGiK NMT. Budynek Kuflonki wyświetlamy tylko przy potwierdzonym w OSM obrysie. Wybierz sektor i trasę. Dwa kije: lewy lub prawy skręt, oba przytrzymane = pozycja zjazdowa, krótki tap obu = skok. Podczas skoku dotknij kierunku, aby zrobić 360°.</p>
+<button id="start">▶ ROZPOCZNIJ ZJAZD</button><small>Trzy oddzielnie ładowane sektory. Granice tras i teren poza osiami są przybliżone. Dane: OSM / OpenSkiMap i GUGiK NMT. Poligony OSM mogą być niekompletne.</small></div></div><div id="error" hidden></div>
+<script src="./piste.js?v=1.8.0"></script><script src="./terrain-data.js?v=1.8.0"></script><script src="./landmarks.js?v=1.8.0"></script><script src="./vehicles.js?v=1.8.0"></script><script src="./engine.js?v=1.8.0"></script><script src="./geometry.js?v=1.8.0"></script><script src="./freeride.js?v=1.8.0"></script><script src="./tricks.js?v=1.8.0"></script><script src="./game.js?v=1.8.0"></script></body></html>
