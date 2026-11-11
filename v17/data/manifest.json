@@ -1,0 +1,59 @@
+{
+  "source": "verified GUGiK WCS elevation",
+  "sectors": [
+    "golgota",
+    "hala",
+    "skrzyczne"
+  ],
+  "sources": {
+    "hala": {
+      "agency": "GUGiK",
+      "service": "https://mapy.geoportal.gov.pl/wss/service/PZGIK/NMT/GRID1/WCS/DigitalTerrainModelFormatTIFF",
+      "coverage": "DTM_PL-KRON86-NH_TIFF",
+      "request_crs": "EPSG:2180",
+      "vertical_datum": "PL-KRON86-NH (adjusted to game base)",
+      "raw_source_resolution_m": 1,
+      "wcs_request_sampling_m": 3.0,
+      "mesh_sample_spacing_m": [
+        7.990069714285713,
+        7.987000262773722
+      ],
+      "coverage_percent": 100.0,
+      "height_alignment_offset_m": 5.237,
+      "downloaded_from": "real WCS GetCoverage GeoTIFF"
+    },
+    "golgota": {
+      "agency": "GUGiK",
+      "service": "https://mapy.geoportal.gov.pl/wss/service/PZGIK/NMT/GRID1/WCS/DigitalTerrainModelFormatTIFF",
+      "coverage": "DTM_PL-KRON86-NH_TIFF",
+      "request_crs": "EPSG:2180",
+      "vertical_datum": "PL-KRON86-NH (adjusted to game base)",
+      "raw_source_resolution_m": 1,
+      "wcs_request_sampling_m": 3.0,
+      "mesh_sample_spacing_m": [
+        7.9939789,
+        7.998815256756757
+      ],
+      "coverage_percent": 100.0,
+      "height_alignment_offset_m": 8.411,
+      "downloaded_from": "real WCS GetCoverage GeoTIFF"
+    },
+    "skrzyczne": {
+      "agency": "GUGiK",
+      "service": "https://mapy.geoportal.gov.pl/wss/service/PZGIK/NMT/GRID1/WCS/DigitalTerrainModelFormatTIFF",
+      "coverage": "DTM_PL-KRON86-NH_TIFF",
+      "request_crs": "EPSG:2180",
+      "vertical_datum": "PL-KRON86-NH (adjusted to game base)",
+      "raw_source_resolution_m": 1,
+      "wcs_request_sampling_m": 3.0,
+      "mesh_sample_spacing_m": [
+        7.98674877092511,
+        7.997446146814404
+      ],
+      "coverage_percent": 100.0,
+      "height_alignment_offset_m": 3.843,
+      "downloaded_from": "real WCS GetCoverage GeoTIFF"
+    }
+  },
+  "not_a_lidar_point_cloud": true
+}
