@@ -18,7 +18,7 @@ const server=http.createServer((req,res)=>{
    await page.goto("http://127.0.0.1:4126/",{waitUntil:"domcontentloaded",timeout:60000});
    await page.waitForFunction(()=>window.__SMR_DEBUG__&&window.__SMR_DEBUG__.get().terrainVertices>5000,{timeout:50000});
    const before=await page.evaluate(()=>window.__SMR_DEBUG__.get());
-   if(before.routeSource!==202733799||before.trees<40||before.buildings<1||before.liftPoints<2||before.widthMeasured!==null)throw Error("Invalid GIS scene "+JSON.stringify(before));
+   if(before.treeTriangles<100||before.forestRenderMeshes!==2||before.routeSource!==202733799||before.trees<40||before.buildings<1||before.liftPoints<2||before.widthMeasured!==null)throw Error("Invalid GIS scene "+JSON.stringify(before));
    await page.locator("#start").click();
    await page.waitForFunction(()=>window.__SMR_DEBUG__.get().distance>0.1,{timeout:20000});
    await page.locator("#tuck").dispatchEvent("pointerdown",{pointerId:31});
