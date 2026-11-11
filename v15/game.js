@@ -5,10 +5,10 @@ const $=id=>document.getElementById(id),clamp=(v,a,b)=>Math.max(a,Math.min(b,v))
 let geo,manifest,zone,chosenRun;
 try{
  const search=new URLSearchParams(window.location.search);
- const m=await fetch("./data/index.json?v=1.5.0");if(!m.ok)throw Error("Missing resort index "+m.status);
+ const m=await fetch("../v14/data/index.json?v=1.5.0");if(!m.ok)throw Error("Missing resort index "+m.status);
  manifest=await m.json();
  zone=manifest.sectors.find(x=>x.id===search.get("zone"))||manifest.sectors[0];
- const res=await fetch(zone.scene+"?v=1.5.0");
+ const res=await fetch("../v14/"+zone.scene.replace(/^\.\//,"")+"?v=1.5.0");
  if(!res.ok)throw Error("Missing terrain zone "+zone.id);
  geo=await res.json();
  chosenRun=geo.runs.find(x=>x.ref===search.get("run"))||geo.runs.find(x=>x.ref===zone.defaultRun)||geo.runs[0];
