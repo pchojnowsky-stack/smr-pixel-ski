@@ -16,9 +16,9 @@ const M={
   -s.reduce((n,v,i)=>n+v*eye[i],0),-u.reduce((n,v,i)=>n+v*eye[i],0),f.reduce((n,v,i)=>n+v*eye[i],0),1]);
  }
 };
-const VS="#version 300 es\nprecision highp float;\nlayout(location=0) in vec3 aPos;\nlayout(location=1) in vec3 aNormal;\nlayout(location=2) in vec3 aColor;\nlayout(location=3) in vec4 aInstance;\nuniform mat4 uViewProj;uniform mat4 uLightVP;uniform float uInstances;\nout vec3 vColor;out vec3 vNormal;out vec3 vWorld;out vec4 vShadow;\nvoid main(){vec3 p=aPos,n=aNormal;if(uInstances>.5){float angle=fract(aInstance.x*.017+aInstance.z*.011)*6.283185,c=cos(angle),s=sin(angle);p=vec3((c*aPos.x-s*aPos.z)*aInstance.w+aInstance.x,aPos.y*aInstance.w+aInstance.y,(s*aPos.x+c*aPos.z)*aInstance.w+aInstance.z);n=vec3(c*aNormal.x-s*aNormal.z,aNormal.y,s*aNormal.x+c*aNormal.z);}vColor=aColor;vNormal=normalize(n);vWorld=p;vShadow=uLightVP*vec4(p,1.);gl_Position=uViewProj*vec4(p,1.);}";
+const VS="#version 300 es\nprecision highp float;\nlayout(location=0) in vec3 aPos;\nlayout(location=1) in vec3 aNormal;\nlayout(location=2) in vec3 aColor;\nlayout(location=3) in vec4 aInstance;\nuniform mat4 uViewProj;uniform mat4 uLightVP;uniform float uInstances;uniform vec3 uOffset;\nout vec3 vColor;out vec3 vNormal;out vec3 vWorld;out vec4 vShadow;\nvoid main(){vec3 p=aPos,n=aNormal;if(uInstances>.5){float angle=fract(aInstance.x*.017+aInstance.z*.011)*6.283185,c=cos(angle),s=sin(angle);p=vec3((c*aPos.x-s*aPos.z)*aInstance.w+aInstance.x,aPos.y*aInstance.w+aInstance.y,(s*aPos.x+c*aPos.z)*aInstance.w+aInstance.z);n=vec3(c*aNormal.x-s*aNormal.z,aNormal.y,s*aNormal.x+c*aNormal.z);}p+=uOffset;vColor=aColor;vNormal=normalize(n);vWorld=p;vShadow=uLightVP*vec4(p,1.);gl_Position=uViewProj*vec4(p,1.);}";
 const FS="#version 300 es\nprecision highp float;\nin vec3 vColor;in vec3 vNormal;in vec3 vWorld;in vec4 vShadow;\nuniform vec3 uCamera;uniform vec3 uSun;uniform vec3 uFog;uniform float uShadowOn;uniform sampler2D uShadow;\nout vec4 frag;\nfloat vis(){if(uShadowOn<.5)return 1.;vec3 p=vShadow.xyz/vShadow.w*.5+.5;if(p.x<0.||p.x>1.||p.y<0.||p.y>1.||p.z>1.)return 1.;vec2 texel=1./vec2(textureSize(uShadow,0));float sum=0.;float bias=.0016;for(int x=-1;x<=1;x++)for(int y=-1;y<=1;y++){sum+=p.z-bias<texture(uShadow,p.xy+vec2(float(x),float(y))*texel).r?1.:0.;}return sum/9.;}\nvoid main(){vec3 n=normalize(vNormal);float sun=max(0.,dot(n,normalize(uSun)));vec3 color=vColor*(.61+.99*sun*mix(.36,1.,vis()))*vec3(.97,1.,1.055);float d=length(vWorld-uCamera);float fog=clamp(1.-exp(-.00000026*d*d),0.,.65);color=mix(color,uFog,fog);color=pow(max(color,vec3(.001)),vec3(.95));frag=vec4(color,1.);}";
-const DVS="#version 300 es\nprecision highp float;\nlayout(location=0) in vec3 aPos;layout(location=3) in vec4 aInstance;uniform mat4 uLightVP;uniform float uInstances;\nvoid main(){vec3 p=aPos;if(uInstances>.5){float angle=fract(aInstance.x*.017+aInstance.z*.011)*6.283185,c=cos(angle),s=sin(angle);p=vec3((c*aPos.x-s*aPos.z)*aInstance.w+aInstance.x,aPos.y*aInstance.w+aInstance.y,(s*aPos.x+c*aPos.z)*aInstance.w+aInstance.z);}gl_Position=uLightVP*vec4(p,1.);}";
+const DVS="#version 300 es\nprecision highp float;\nlayout(location=0) in vec3 aPos;layout(location=3) in vec4 aInstance;uniform mat4 uLightVP;uniform float uInstances;uniform vec3 uOffset;\nvoid main(){vec3 p=aPos;if(uInstances>.5){float angle=fract(aInstance.x*.017+aInstance.z*.011)*6.283185,c=cos(angle),s=sin(angle);p=vec3((c*aPos.x-s*aPos.z)*aInstance.w+aInstance.x,aPos.y*aInstance.w+aInstance.y,(s*aPos.x+c*aPos.z)*aInstance.w+aInstance.z);}gl_Position=uLightVP*vec4(p+uOffset,1.);}";
 const DFS="#version 300 es\nprecision highp float;\nvoid main(){}";
 class SnowEngine{
  constructor(canvas){
@@ -48,26 +48,30 @@ class SnowEngine{
   gl.deleteShader(v);gl.deleteShader(f);return p;
  }
  mesh(name,shape,instances=null,castsShadow=true){
-  const gl=this.gl,vao=gl.createVertexArray();gl.bindVertexArray(vao);
+  const gl=this.gl,vao=gl.createVertexArray();gl.bindVertexArray(vao);let instanceBuffer=null;
   for(const [i,vals] of [shape.positions,shape.normals,shape.colors].entries()){
    const buf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buf);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(vals),gl.STATIC_DRAW);
    gl.enableVertexAttribArray(i);gl.vertexAttribPointer(i,3,gl.FLOAT,false,0,0);
   }
   if(instances&&instances.length){
-   const buf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buf);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(instances),gl.STATIC_DRAW);
+   const buf=gl.createBuffer();instanceBuffer=buf;gl.bindBuffer(gl.ARRAY_BUFFER,buf);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(instances),gl.DYNAMIC_DRAW);
    gl.enableVertexAttribArray(3);gl.vertexAttribPointer(3,4,gl.FLOAT,false,0,0);gl.vertexAttribDivisor(3,1);
   }
   const ib=gl.createBuffer();gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ib);
   gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,new Uint32Array(shape.indices),gl.STATIC_DRAW);gl.bindVertexArray(null);
-  const object={name,vao,count:shape.indices.length,instanceCount:instances?instances.length/4:0,castsShadow,visible:true};
+  const object={name,vao,count:shape.indices.length,instanceCount:instances?instances.length/4:0,castsShadow,visible:true,offset:[0,0,0],instanceBuffer};
   this.shapes.push(object);return object;
+ }
+ updateInstances(mesh,instances){if(!mesh.instanceBuffer)throw Error("Not instanced");const gl=this.gl;
+  gl.bindBuffer(gl.ARRAY_BUFFER,mesh.instanceBuffer);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(instances),gl.DYNAMIC_DRAW);
+  mesh.instanceCount=instances.length/4;
  }
  resize(){const w=Math.round(this.canvas.clientWidth*this.pixelScale),h=Math.round(this.canvas.clientHeight*this.pixelScale);
   if(this.canvas.width!==w||this.canvas.height!==h){this.canvas.width=w;this.canvas.height=h;}}
  draw(program,shadowOnly){
-  const gl=this.gl,u=gl.getUniformLocation(program,"uInstances");
+  const gl=this.gl,u=gl.getUniformLocation(program,"uInstances"),off=gl.getUniformLocation(program,"uOffset");
   for(const mesh of this.shapes){if(!mesh.visible||(shadowOnly&&!mesh.castsShadow))continue;
-   gl.bindVertexArray(mesh.vao);gl.uniform1f(u,mesh.instanceCount?1:0);
+   gl.bindVertexArray(mesh.vao);gl.uniform1f(u,mesh.instanceCount?1:0);gl.uniform3fv(off,mesh.offset);
    if(!mesh.instanceCount)gl.vertexAttrib4f(3,0,0,0,1);
    if(mesh.instanceCount)gl.drawElementsInstanced(gl.TRIANGLES,mesh.count,gl.UNSIGNED_INT,0,mesh.instanceCount);
    else gl.drawElements(gl.TRIANGLES,mesh.count,gl.UNSIGNED_INT,0);
