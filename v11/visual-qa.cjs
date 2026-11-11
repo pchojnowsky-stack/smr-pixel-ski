@@ -15,7 +15,7 @@ const srv=http.createServer((req,res)=>{const u=new URL(req.url,"http://localhos
   let before=await page.evaluate(()=>window.__SMR_DEBUG__.get());
   if(before.version!=="1.1.0"||!before.sourceRunId||before.trees<500||!before.freeTerrain||before.cameraMode!=="aerial"||before.chairs<10||before.widthMeasured!==null)throw Error("bad geo scene: "+JSON.stringify(before));
   await page.locator("#start").click();await page.waitForFunction(()=>Math.hypot(window.__SMR_DEBUG__.get().x,window.__SMR_DEBUG__.get().z)>.5,{timeout:15000});
-  const baseX=before.x;
+  const baseX=before.x,initialZoom=before.zoom;
   await page.locator("#right").dispatchEvent("pointerdown",{pointerId:5});
   await page.waitForFunction(x=>window.__SMR_DEBUG__.get().x>x+2,baseX,{timeout:25000});
   await page.locator("#right").dispatchEvent("pointerup",{pointerId:5});
@@ -27,7 +27,7 @@ const srv=http.createServer((req,res)=>{const u=new URL(req.url,"http://localhos
   await page.waitForFunction(()=>window.__SMR_DEBUG__.get().airborne,{timeout:15000});
   await page.locator("#jump").dispatchEvent("pointerup",{pointerId:6});
   const after=await page.evaluate(()=>window.__SMR_DEBUG__.get());
-  if(after.cameraMode!=="aerial"||after.zoom>=1||after.x===baseX||!after.trailPoints)throw Error("freeride/camera/zoom/track failed "+JSON.stringify(after));
+  if(after.cameraMode!=="aerial"||after.zoom>=initialZoom||after.x===baseX||!after.trailPoints)throw Error("freeride/camera/zoom/track failed "+JSON.stringify(after));
   fs.mkdirSync(path.join(root,"qa"),{recursive:true});await page.screenshot({path:path.join(root,"qa",name+".png")});
   fs.writeFileSync(path.join(root,"qa",name+".json"),JSON.stringify({before,after},null,2));
   console.log("OPEN SKI MAP QA",name,JSON.stringify(after));await context.close();

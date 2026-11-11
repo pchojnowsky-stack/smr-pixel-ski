@@ -16,11 +16,11 @@ let engine;
 try{engine=new B.Engine($("scene"),true,{powerPreference:"high-performance"});}catch(e){fatal("Brak WebGL: "+e.message);return;}
 const mobile=/Android|iPhone|iPad|Mobile/i.test(navigator.userAgent);
 engine.setHardwareScalingLevel(Math.max(1,(devicePixelRatio||1)/(mobile?1.1:1.3)));
-const world=new B.Scene(engine);world.clearColor=new B.Color4(.64,.79,.90,1);
+const world=new B.Scene(engine);world.clearColor=new B.Color4(.72,.80,.89,1);
 world.ambientColor=new B.Color3(.68,.78,.88);world.imageProcessingConfiguration.contrast=1.13;
-world.fogMode=B.Scene.FOGMODE_EXP2;world.fogDensity=.00016;world.fogColor=new B.Color3(.76,.86,.95);
+world.fogMode=B.Scene.FOGMODE_EXP2;world.fogDensity=.00016;world.fogColor=new B.Color3(.78,.83,.91);
 const camera=new B.FreeCamera("resort-follow-camera",V(0,340,-30),world);
-camera.fov=.69;camera.minZ=.5;camera.maxZ=2100;camera.inputs.clear();world.activeCamera=camera;
+camera.fov=.72;camera.minZ=.5;camera.maxZ=2100;camera.inputs.clear();world.activeCamera=camera;
 const hemisphere=new B.HemisphericLight("high alpine winter ambient",V(-.1,1,.26),world);
 hemisphere.intensity=.86;hemisphere.diffuse=new B.Color3(.88,.94,1);
 const sun=new B.DirectionalLight("winter side sun",V(-.6,-.91,.36),world);
@@ -140,8 +140,9 @@ const bounds={xMin:terrain.x0,xMax:terrain.x0+(terrain.cols-1)*sx,zMin:terrain.z
 if(!window.SMR_FREERIDE){fatal("Brakuje modułu swobodnej jazdy");return;}
 const ride=window.SMR_FREERIDE.createRide({height,bounds,spawn,closestDistance:closestCourse});
 const state=ride.state;
-let currentMode="menu",aerial=true,zoom=1,trailFrame=0;
-function setMode(next){currentMode=next;$("overlay").hidden=next==="play";$("pause").textContent=next==="pause"?"▶":"Ⅱ";}
+let currentMode="menu",aerial=true,zoom=(window.innerHeight>window.innerWidth?1.45:1),trailFrame=0;
+function setMode(next){currentMode=next;$("overlay").hidden=next==="play";$("pause").textContent=next==="pause"?"▶":"Ⅱ";
+ document.body.classList.toggle("playing",next==="play");}
 function pause(){if(currentMode==="play"){$("heading").textContent="PAUZA";$("start").textContent="▶ KONTYNUUJ";setMode("pause");}
  else if(currentMode==="pause")setMode("play");}
 $("start").onclick=()=>{if(currentMode!=="pause")reset();setMode("play");};
@@ -215,7 +216,7 @@ function reset(){
  ride.reset();eraseTraces();for(const k of Object.keys(input))input[k]=false;
  skierController.reset();skier.position=V(state.x,state.groundY+.30,state.z);skier.rotation.y=state.heading;
  const d=V(Math.sin(state.heading),0,Math.cos(state.heading));
- const camDistance=(aerial?112:24)*zoom,camHeight=(aerial?91:17)*zoom;
+ const camDistance=(aerial?89:24)*zoom,camHeight=(aerial?138:17)*zoom;
  camera.position=V(state.x-d.x*camDistance+camDistance*.06,state.groundY+camHeight,state.z-d.z*camDistance);
  camera.setTarget(V(state.x+d.x*22,state.groundY,state.z+d.z*22));
 }
@@ -233,11 +234,12 @@ function update(dt){
  const camHeight=(aerial?91:17)*zoom;
  const desired=V(state.x-dir.x*camDistance+camDistance*.05,state.groundY+camHeight+state.jumpY*.15,
                  state.z-dir.z*camDistance);
- const look=V(state.x+dir.x*(aerial?35:15),state.groundY+state.jumpY*.42,
-              state.z+dir.z*(aerial?35:15));
+ const look=V(state.x+dir.x*(aerial?23:15),state.groundY+state.jumpY*.42,
+              state.z+dir.z*(aerial?23:15));
  camera.position=B.Vector3.Lerp(camera.position,desired,clamp(dt*2.9,0,1));
  camera.setTarget(B.Vector3.Lerp(camera.getTarget(),look,clamp(dt*3.3,0,1)));
  $("speed").textContent=Math.round(state.speed*3.6)+" km/h";
+ $("clock").textContent=Math.floor(state.time/60)+":"+String(Math.floor(state.time%60)).padStart(2,"0");
  $("distance").textContent=(state.offPiste?"FREERIDE":"TRASA")+" · "+Math.round(state.edgeDistance)+" m od osi";
  $("fill").style.width=clamp((state.z-bounds.zMin)/(bounds.zMax-bounds.zMin)*100,0,100)+"%";
 }

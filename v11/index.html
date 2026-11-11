@@ -7,12 +7,19 @@
 #camera{min-width:100px}.camera-tools button:active{background:#d58b49bf}
 @media(max-width:650px){.camera-tools{top:119px;right:8px;gap:3px}.camera-tools button{font-size:10px;padding:7px 8px}#camera{min-width:82px}}
 @media(max-height:480px){.camera-tools{top:65px;right:70px}.warning{max-width:50vw}}
+.goal-info{position:absolute;top:15px;left:50%;transform:translateX(-50%);font-size:11px;letter-spacing:1px;text-align:center;color:#eaf3ff;text-shadow:0 2px 7px #152e44}
+.goal-info strong{display:block;font-size:20px;font-weight:850;letter-spacing:1px}
+body.playing .warning{display:none}
+body.playing .mapinfo{opacity:.50;max-width:280px;transition:opacity .3s}
+body.playing .mapinfo small{display:none}
+@media(max-width:650px){.goal-info{top:67px;left:50%;font-size:9px}.goal-info strong{font-size:13px}.stats .stat strong{font-size:16px}}
+@media(max-height:480px){.goal-info{top:11px}.goal-info strong{font-size:15px}}
 </style></head><body>
 <canvas id="scene" aria-label="Trasa Szumarjanka na podstawie danych OSM i DEM"></canvas>
-<div id="hud"><div id="top"><div class="glass brand">SMR PIXEL SKI<small>AERIAL FREERIDE · 1.1</small></div><div class="stats"><div class="glass stat"><small>PRĘDKOŚĆ</small><strong id="speed">0 km/h</strong></div><button id="pause" aria-label="Pauza">Ⅱ</button></div></div>
+<div id="hud"><div id="top"><div class="glass brand">SMR PIXEL SKI<small>AERIAL FREERIDE · 1.1</small></div><div class="stats"><div class="glass stat"><small>CZAS</small><strong id="clock">0:00</strong><small id="speed">0 km/h</small></div><button id="pause" aria-label="Pauza">Ⅱ</button></div></div>
 <div class="mapinfo"><strong>SZUMARJANKA · TRASA NR 4</strong><small>Swobodny zjazd · widok z lotu ptaka · trasa 3D OpenSkiMap</small></div>
 <div class="warning">Swobodna jazda po całej dostępnej mapie. Teren poza trasą poglądowy, nie model NMT 1 m.</div>
-<div id="fps"></div><div class="camera-tools"><button id="camera" aria-label="Zmień kamerę">KAMERA: LOT</button><button id="zoomIn" aria-label="Przybliż">＋</button><button id="zoomOut" aria-label="Oddal">－</button></div><div class="bottom"><span id="distance">TRASA · 0 m od osi</span><div id="progress"><div id="fill"></div></div></div>
+<div class="goal-info">CEL <strong>SKI TO GOAL</strong></div><div id="fps"></div><div class="camera-tools"><button id="camera" aria-label="Zmień kamerę">KAMERA: LOT</button><button id="zoomIn" aria-label="Przybliż">＋</button><button id="zoomOut" aria-label="Oddal">－</button></div><div class="bottom"><span id="distance">TRASA · 0 m od osi</span><div id="progress"><div id="fill"></div></div></div>
 <div class="controls"><div class="pair"><button class="control arrow" id="left" aria-label="Lewo">❮</button><button class="control arrow" id="right" aria-label="Prawo">❯</button></div><div class="pair"><button class="control" id="brake">HAMUJ</button><button class="control" id="tuck">⬇<small>ZJAZD</small></button><button class="control" id="jump">⬆<small>SKOK</small></button></div></div></div>
 <div id="overlay"><div id="card"><span class="eyebrow">ETAP 1.1 · SWOBODNA JAZDA I KAMERA LOTNICZA</span><h1 id="heading">SZUMARJANKA</h1><p>Swobodnie eksploruj teren: bez prowadzenia po trasie. Kamera wysoko za narciarzem, ślady w śniegu, drzewostan, kolej B1 i inni narciarze. Lewo/prawo, ZJAZD, SKOK oraz HAMUJ.</p><button id="start">▶ ROZPOCZNIJ ZJAZD</button><small>OpenSkiMap/OpenSkiData · © OpenStreetMap contributors (ODbL) · DEM Mapzen</small></div></div><div id="error" hidden></div>
 <script src="https://cdn.babylonjs.com/babylon.js"></script><script src="./skier.js?v=1.1.0"></script><script src="./forest.js?v=1.1.0"></script><script src="./freeride.js?v=1.1.0"></script><script src="./game.js?v=1.1.0"></script></body></html>
