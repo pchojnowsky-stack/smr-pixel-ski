@@ -11,8 +11,7 @@ try{const r=await fetch("./data/scene.json?v=1.0.0",{cache:"no-cache"});if(!r.ok
  geo=await r.json();if(!geo.route||geo.route.length<20||!geo.terrain||!geo.source?.run_id)throw Error("invalid OpenSkiMap source");
 }catch(e){fatal("Nie udało się pobrać nowej mapy: "+e.message);return;}
 if(!window.BABYLON||!window.SMR_SKIER||!window.SMR_FOREST){fatal("Brak modułu silnika, narciarza lub lasu.");return;}
-const B=BABYLON,V=(x,y,z)=>new B.Vector3(x,y,z),scene=new B.Scene(new B.NullEngine()); // replaced by real WebGL engine below
-scene.dispose();
+const B=BABYLON,V=(x,y,z)=>new B.Vector3(x,y,z);
 let engine;
 try{engine=new B.Engine($("scene"),true,{powerPreference:"high-performance"});}catch(e){fatal("Brak WebGL: "+e.message);return;}
 const mobile=/Android|iPhone|iPad|Mobile/i.test(navigator.userAgent);
