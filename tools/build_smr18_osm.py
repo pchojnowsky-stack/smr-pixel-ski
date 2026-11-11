@@ -23,8 +23,8 @@ ORIGIN={"lat":49.6837296,"lon":18.9958973}
 LAT_METRES=111132.5
 LON_METRES=111320*math.cos(math.radians(ORIGIN["lat"]))
 OVERPASS=[
- "https://overpass.kumi.systems/api/interpreter",
- "https://overpass-api.de/api/interpreter",
+ "https://overpass.private.coffee/api/interpreter",
+ "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
  "https://overpass.nchc.org.tw/api/interpreter",
 ]
 ALLOWED_FOREST={"natural=wood","landuse=forest"}
@@ -97,13 +97,13 @@ def request(scene,sector):
  out geom;"""
  errors=[]
  for endpoint in OVERPASS:
-  for attempt in range(2):
+  for attempt in range(1):
    try:
     data=urllib.parse.urlencode({"data":q}).encode()
     req=urllib.request.Request(endpoint,data=data,headers={
       "User-Agent":"SMR-Pixel-Ski-OSM-GeoVerifier/1.8 (OpenStreetMap attribution)",
       "Content-Type":"application/x-www-form-urlencoded"})
-    with urllib.request.urlopen(req,timeout=230) as response:
+    with urllib.request.urlopen(req,timeout=110) as response:
       payload=response.read(25_000_000)
     output=json.loads(payload)
     if "elements" not in output:raise RuntimeError("No elements in OSM response")
