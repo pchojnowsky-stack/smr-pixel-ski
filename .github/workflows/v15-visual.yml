@@ -1,0 +1,39 @@
+name: SMR 1.5 Pistes, Dual Poles and Physics QA
+on:
+  push:
+    branches: [stage-15-pistes-dual-sticks, main]
+    paths:
+      - 'v15/**'
+      - '.github/workflows/v15-visual.yml'
+  pull_request:
+    paths:
+      - 'v15/**'
+      - '.github/workflows/v15-visual.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  stage15:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntax and gameplay tests
+        run: |
+          node --check v15/game.js
+          node --check v15/freeride.js
+          node --check v15/piste.js
+          node --check v15/tricks.js
+          node v15/physics.test.cjs
+      - name: Browser dependencies
+        run: |
+          npm install --no-save playwright
+          npx playwright install chromium --with-deps
+      - name: WebGL2 screenshots and touch controls
+        run: node v15/visual-qa.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smr15-real-webgl2-screenshots
+          path: v15/qa/
+          retention-days: 14
