@@ -1,0 +1,16 @@
+{
+  "format": "smr18-osm-geolocated-manifest",
+  "sectors": [
+    "hala"
+  ],
+  "sources": {
+    "hala": {
+      "endpoint": "https://maps.mail.ru/osm/tools/overpass/api/interpreter (alternate)",
+      "trees": 728,
+      "buildings": 350,
+      "forest_area_m2": 433658,
+      "mapped_buildings": 410,
+      "verified_polygon": true
+    }
+  }
+}
