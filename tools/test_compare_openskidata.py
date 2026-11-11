@@ -10,7 +10,7 @@ class OpenSkiDataTests(unittest.TestCase):
   cls.scene=json.loads(Path("v09/data/scene.json").read_text(encoding="utf8"))
   import math
   o=cls.scene["origin"]
-  cls.to_geo=lambda x,z:[o["lon"]-z/(111320*math.cos(math.radians(o["lat"]))),o["lat"]+x/111132.5]
+  cls.to_geo=staticmethod(lambda x,z:[o["lon"]-z/(111320*math.cos(math.radians(o["lat"]))),o["lat"]+x/111132.5])
  def feature(self,points,name="Szumarjanka",ref="4",typ="LineString"):
   coords=[self.to_geo(*p) for p in points]
   if typ=="Polygon":coords=[coords+[coords[0]]]
@@ -27,7 +27,7 @@ class OpenSkiDataTests(unittest.TestCase):
   self.assertEqual(r["potential_matches"][0]["geometry_type"],"Polygon")
   self.assertIsNone(r["potential_matches"][0]["best_geometry_comparison"])
  def test_unrelated_distant_skipped(self):
-  f=self.feature([[180,0],[180,50]],name="Other",ref="7")
+  f=self.feature([[700,0],[700,50]],name="Other",ref="7")
   r=mod.compare(self.scene,[f],"fixture")
   self.assertEqual(len(r["potential_matches"]),0)
  def test_invalid_coordinates_skipped(self):
