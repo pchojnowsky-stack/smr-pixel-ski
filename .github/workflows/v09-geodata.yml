@@ -1,0 +1,28 @@
+name: SMR 0.9 Geodata Intake
+on:
+  push:
+    branches: [stage-09-szczyrk-real-geodata]
+    paths:
+      - 'tools/fetch_szczyrk.py'
+      - '.github/workflows/v09-geodata.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install pillow
+      - name: Download source geometries and DEM, write uncertainty report
+        run: python tools/fetch_szczyrk.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: szczyrk-geo-source-v09
+          path: v09/data/
+          retention-days: 14

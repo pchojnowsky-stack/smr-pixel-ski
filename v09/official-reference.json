@@ -1,0 +1,18 @@
+{
+  "trail_id": 4,
+  "primary_name": "Szumarjanka",
+  "historic_map_name": "Szmaragdowa",
+  "start": "Hala Skrzyczeńska",
+  "end": "Solisko",
+  "length_m_published": 2014,
+  "vertical_drop_m_published": 345,
+  "start_elevation_m_approx": 1000,
+  "end_elevation_m_approx": 655,
+  "slope_average_percent_approx": 17,
+  "width_m": null,
+  "geometry_verified": false,
+  "data_downloaded": false,
+  "map": "https://www.szczyrkowski.pl/fileadmin/resort_upload/szczyrkowski/23_zima/B2B-Szczyrk_Mountain_Resort.pdf",
+  "dem_target": "GUGiK NMT 1m PL-EVRF2007-NH",
+  "note": "Descriptive baseline only. Not a measured continuous piste axis or width."
+}

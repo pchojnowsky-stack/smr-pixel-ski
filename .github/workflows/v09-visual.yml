@@ -1,0 +1,31 @@
+name: SMR 0.9 Geodata Playable Visual QA
+on:
+  push:
+    branches: [stage-09-szczyrk-real-geodata, main]
+    paths:
+      - 'v09/**'
+      - '.github/workflows/v09-visual.yml'
+  pull_request:
+    paths:
+      - 'v09/**'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  screenshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+      - run: node --check v09/game.js && node --check v09/skier.js && node --check v09/visual-qa.cjs
+      - run: |
+          npm install --no-save playwright
+          npx playwright install chromium --with-deps
+      - name: Test geodata scenery, touch controls and actual WebGL screenshots
+        run: node v09/visual-qa.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smr-v09-geodata-playable-screens
+          path: v09/qa/
+          retention-days: 14
