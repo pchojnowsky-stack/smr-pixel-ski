@@ -20,7 +20,7 @@ const world=new B.Scene(engine);world.clearColor=new B.Color4(.64,.79,.90,1);
 world.ambientColor=new B.Color3(.68,.78,.88);world.imageProcessingConfiguration.contrast=1.13;
 world.fogMode=B.Scene.FOGMODE_EXP2;world.fogDensity=.00023;world.fogColor=new B.Color3(.76,.86,.95);
 const camera=new B.FreeCamera("resort-follow-camera",V(0,340,-30),world);
-camera.fov=.78;camera.minZ=.5;camera.maxZ=2100;camera.inputs.clear();world.activeCamera=camera;
+camera.fov=.71;camera.minZ=.5;camera.maxZ=2100;camera.inputs.clear();world.activeCamera=camera;
 const hemisphere=new B.HemisphericLight("high alpine winter ambient",V(-.1,1,.26),world);
 hemisphere.intensity=.86;hemisphere.diffuse=new B.Color3(.88,.94,1);
 const sun=new B.DirectionalLight("winter side sun",V(-.6,-.91,.36),world);
@@ -65,7 +65,7 @@ function terrainMesh(){
  const vd=new B.VertexData();vd.positions=points;vd.indices=indices;vd.normals=normals;vd.colors=colors;vd.uvs=uv;
  const m=new B.Mesh("OpenSkiMap corrected winter relief",world);vd.applyToMesh(m);
  const material=mat("snow terrain vertex-blended","#ffffff");material.useVertexColors=true;material.backFaceCulling=false;
- material.specularColor=new B.Color3(.06,.08,.11);m.material=material;m.receiveShadows=true;
+ material.specularColor=new B.Color3(.025,.035,.045);material.disableLighting=true;material.emissiveColor=new B.Color3(.98,.99,1);m.material=material;m.receiveShadows=false;
  return m;
 }
 terrainMesh();
@@ -118,7 +118,7 @@ function reset(){
  state.distance=0;state.lane=0;state.speed=15;state.lean=0;state.time=0;state.airborne=false;state.jumpY=0;state.jumpV=0;state.jumpLatch=false;state.jumpCooldown=0;
  for(const k of Object.keys(input))input[k]=false;
  skierController.reset();const c=course(0);skier.position=V(c.x,height(c.x,c.z)+.3,c.z);
- camera.position=V(c.x+3,c.y+36,c.z-33);camera.setTarget(V(c.x,c.y,c.z+20));
+ camera.position=V(c.x+3,c.y+20,c.z-20);camera.setTarget(V(c.x,c.y,c.z+16));
 }
 function mode(m){state.mode=m;$("overlay").hidden=m==="play";$("pause").textContent=m==="pause"?"▶":"Ⅱ";}
 $("start").onclick=()=>{if(state.mode!=="pause")reset();mode("play");};
@@ -149,7 +149,7 @@ function animate(dt){
  const y=height(x,z)+.26+state.jumpY;
  skier.position.copyFromFloats(x,y,z);skier.rotation.y=Math.atan2(tx,tz);
  skierController.animate({turn:state.lean,speed:state.speed,time:state.time,braking:input.brake,tuck:Number(input.tuck),airborne:state.airborne,dt,active:true,px:x,py:y,pz:z});
- const follow=V(x-tx/mag*27+3,y+26,z-tz/mag*27),look=V(x+tx/mag*24,y+1,z+tz/mag*24);
+ const follow=V(x-tx/mag*19+3,y+19,z-tz/mag*19),look=V(x+tx/mag*16,y+1,z+tz/mag*16);
  camera.position=B.Vector3.Lerp(camera.position,follow,clamp(dt*4,0,1));
  camera.setTarget(B.Vector3.Lerp(camera.getTarget(),look,clamp(dt*4.5,0,1)));
  $("speed").textContent=Math.round(state.speed*3.6)+" km/h";
