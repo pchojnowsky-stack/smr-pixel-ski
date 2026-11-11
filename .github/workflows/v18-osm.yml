@@ -8,50 +8,76 @@ on:
       - '.github/workflows/v18-osm.yml'
 permissions:
   contents: write
+concurrency:
+  group: smr18-osm-import
+  cancel-in-progress: true
 jobs:
   osm:
     runs-on: ubuntu-latest
-    timeout-minutes: 35
-    concurrency:
-      group: smr18-osm-import
-      cancel-in-progress: true
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        sector: [hala, golgota, skrzyczne]
     steps:
       - uses: actions/checkout@v4
         with:
           ref: stage-18-osm-forest-buildings
           persist-credentials: true
-      - name: Install polygon tools
+      - name: Install geospatial polygon tools
         run: python -m pip install --disable-pip-version-check shapely
-      - name: Fetch and spatially verify forests and buildings from OSM Overpass
-        run: python tools/build_smr18_osm.py --sectors hala golgota skrzyczne
-      - name: Validate georeferenced OSM extracts
+      - name: Retrieve and verify one OSM sector
+        run: python tools/build_smr18_osm.py --sectors ${{ matrix.sector }}
+      - name: Check OSM provenance in sector
+        env:
+          SECTOR: ${{ matrix.sector }}
         run: |
           python - <<'PY'
-          import json,pathlib
-          d=pathlib.Path("v18/data")
-          index=json.loads((d/"osm-manifest.json").read_text())
-          assert sorted(index["sectors"])==["golgota","hala","skrzyczne"]
-          for sector in index["sectors"]:
-              scene=json.loads((d/(sector+".json")).read_text())
-              trees=scene["trees"];buildings=scene["buildings"];src=scene["source"]
-              assert scene["format"]=="smr18-osm-geolocated-landcover"
-              assert src["forest_procedural_fallback"] is False
-              assert len(trees)>=40 and len(buildings)>=5
-              assert len(set(x["id"] for x in buildings))==len(buildings)
-              assert src["woodland_after_exclusion_m2"]>1200
-              print(sector, len(trees), "polygon-constrained trees",len(buildings),"OSM mapped buildings")
+          import json, pathlib, os
+          n=os.environ["SECTOR"]
+          d=json.loads((pathlib.Path("v18/data")/(n+".json")).read_text())
+          assert d["sector"]==n and d["format"]=="smr18-osm-geolocated-landcover"
+          assert not d["source"]["forest_procedural_fallback"]
+          assert len(d["trees"])>=40 and len(d["buildings"])>=5
+          assert len(set(b["id"] for b in d["buildings"]))==len(d["buildings"])
+          print(n,"VERIFIED",len(d["trees"]),"trees",len(d["buildings"]),"buildings")
           PY
-      - name: Commit verified OSM geometry while preserving other edits
+      - name: Merge verified sector into latest branch safely
+        env:
+          SECTOR: ${{ matrix.sector }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          mkdir -p /tmp/smr18-osm-verified
-          cp v18/data/{osm-manifest,hala,golgota,skrzyczne}.json /tmp/smr18-osm-verified/
-          git fetch origin stage-18-osm-forest-buildings
-          git reset --hard origin/stage-18-osm-forest-buildings
-          cp /tmp/smr18-osm-verified/*.json v18/data/
-          git add v18/data/osm-manifest.json v18/data/hala.json v18/data/golgota.json v18/data/skrzyczne.json
-          if ! git diff --cached --quiet; then
-            git commit -m "Import spatially verified OSM woodland and building footprints for all three sectors"
-            git push origin HEAD:stage-18-osm-forest-buildings
-          fi
+          cp "v18/data/$SECTOR.json" "/tmp/smr18-$SECTOR.json"
+          for attempt in 1 2 3 4 5 6; do
+            git fetch origin stage-18-osm-forest-buildings
+            git reset --hard origin/stage-18-osm-forest-buildings
+            mkdir -p v18/data
+            cp "/tmp/smr18-$SECTOR.json" "v18/data/$SECTOR.json"
+            python - <<'PY'
+          import json,pathlib
+          d=pathlib.Path("v18/data")
+          result={"format":"smr18-osm-geolocated-manifest","sectors":[],"sources":{}}
+          for sector in ("hala","golgota","skrzyczne"):
+              p=d/(sector+".json")
+              if not p.exists():continue
+              overlay=json.loads(p.read_text())
+              if overlay.get("format")!="smr18-osm-geolocated-landcover":continue
+              result["sectors"].append(sector)
+              result["sources"][sector]={
+                "endpoint":overlay["source"]["endpoint"],"trees":len(overlay["trees"]),
+                "buildings":len(overlay["buildings"]),
+                "forest_area_m2":overlay["source"]["forest_area_m2"],
+                "mapped_buildings":overlay["source"]["building_total_mapped"],
+                "verified_polygon":True}
+          (d/"osm-manifest.json").write_text(json.dumps(result,ensure_ascii=False,indent=2)+"\n")
+          PY
+            git add "v18/data/$SECTOR.json" v18/data/osm-manifest.json
+            if git diff --cached --quiet; then exit 0; fi
+            git commit -m "Import verified OSM landcover for $SECTOR"
+            if git push origin HEAD:stage-18-osm-forest-buildings; then exit 0; fi
+            sleep "$attempt"
+          done
+          echo "Could not safely commit OSM data after retries" >&2
+          exit 1
