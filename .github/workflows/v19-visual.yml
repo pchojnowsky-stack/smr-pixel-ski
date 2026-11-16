@@ -1,0 +1,43 @@
+name: SMR 1.9 Arcade Physics and Gaming HUD QA
+on:
+  push:
+    branches: [stage-19-arcade-gameplay-hud, main]
+    paths:
+      - 'v19/**'
+      - '.github/workflows/v19-visual.yml'
+  pull_request:
+    paths:
+      - 'v19/**'
+      - '.github/workflows/v19-visual.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  arcade19:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Script checks, real GUGiK source and arcade physics
+        run: |
+          node --check v19/game.js
+          node --check v19/freeride.js
+          node --check v19/geometry.js
+          node --check v19/landmarks.js
+          node --check v19/vehicles.js
+          node --check v19/tricks.js
+          node --check v19/visual-qa.cjs
+          node v19/terrain.test.cjs
+          node v19/arcade.test.cjs
+      - name: Install WebGL2 browser
+        run: |
+          npm install --no-save playwright
+          npx playwright install chromium --with-deps
+      - name: Actual phone and desktop render, kmh HUD, left-right arcade steering
+        run: node v19/visual-qa.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smr19-arcade-hud-real-webgl2-qa
+          path: v19/qa/
+          retention-days: 14
