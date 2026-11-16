@@ -37,7 +37,7 @@ const server=http.createServer((req,res)=>{
    if(await page.locator("#arcade-score").count()!==1||await page.locator("#score").count()!==1)
     throw Error("Scoreboard HUD missing");
    const display=await page.locator("#speed").innerText();
-   if(!/^\\d+$/.test(display))throw Error("km/h numeric readout must be prominent, got "+display);
+   if(!/^\d+$/.test(display))throw Error("km/h numeric readout must be prominent, got "+display);
    if(await page.locator("#left").innerText()!=="◀\\nLEWO"&&!(await page.locator("#left").innerText()).includes("LEWO"))
     throw Error("Visible left-control label missing");
    if(!(await page.locator("#right").innerText()).includes("PRAWO"))
@@ -46,7 +46,7 @@ const server=http.createServer((req,res)=>{
    await page.locator("#start").click();
    await page.waitForFunction(()=>window.__SMR_DEBUG__.get().mode==="play");
    const hudSpeed=await page.evaluate(()=>document.getElementById("speed").innerText);
-   if(!/^\\d+$/.test(hudSpeed)||Number(hudSpeed)<80)
+   if(!/^\d+$/.test(hudSpeed)||Number(hudSpeed)<80)
     throw Error("Arcade speed must appear in km/h after game starts: "+hudSpeed);
    // Regression: real browser hit-testing. Synthetic dispatchEvent used below does NOT
    // catch pointer-events:none inherited from #controls.
